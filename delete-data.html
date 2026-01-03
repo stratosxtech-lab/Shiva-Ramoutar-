@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Request Data Deletion - Emergency Ready</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1e3a5f;
+      --primary-light: #2d4a6f;
+      --accent: #3b82f6;
+      --background: #ffffff;
+      --surface: #f8fafc;
+      --foreground: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --error: #ef4444;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--background);
+      color: var(--foreground);
+      line-height: 1.7;
+    }
+    
+    header {
+      background: var(--primary);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      color: white;
+      font-size: 1.25rem;
+      font-weight: 700;
+      text-decoration: none;
+    }
+    
+    .back-link {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+    
+    .back-link:hover { opacity: 1; }
+    
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.125rem;
+      margin-bottom: 2rem;
+    }
+    
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-top: 2.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+    }
+    
+    h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--foreground);
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    p { margin-bottom: 1rem; }
+    
+    ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+    
+    li { margin-bottom: 0.5rem; }
+    
+    strong { font-weight: 600; }
+    
+    a { color: var(--accent); text-decoration: none; }
+    
+    a:hover { text-decoration: underline; }
+    
+    .warning-box {
+      background: #fef3c7;
+      border: 1px solid var(--warning);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      color: #92400e;
+    }
+    
+    .info-box {
+      background: #eff6ff;
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      color: #1e40af;
+    }
+    
+    .timeline-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+    }
+    
+    .timeline-table th,
+    .timeline-table td {
+      padding: 1rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    
+    .timeline-table th {
+      background: var(--surface);
+      font-weight: 600;
+    }
+    
+    .contact-box {
+      background: var(--primary);
+      color: white;
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 2rem 0;
+      text-align: center;
+    }
+    
+    .contact-box h3 {
+      color: white;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .contact-box p {
+      color: rgba(255,255,255,0.9);
+      margin-bottom: 1.5rem;
+    }
+    
+    .contact-box a.email-btn {
+      display: inline-block;
+      background: white;
+      color: var(--primary);
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .contact-box a.email-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      text-decoration: none;
+    }
+    
+    .steps {
+      counter-reset: step;
+    }
+    
+    .step {
+      position: relative;
+      padding-left: 3rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 2rem;
+      height: 2rem;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.875rem;
+    }
+    
+    footer {
+      background: var(--foreground);
+      color: white;
+      padding: 2rem;
+      text-align: center;
+      margin-top: 3rem;
+    }
+    
+    footer a { color: white; opacity: 0.8; }
+    
+    footer a:hover { opacity: 1; }
+    
+    @media (max-width: 768px) {
+      h1 { font-size: 2rem; }
+      main { padding: 2rem 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <a href="index.html" class="logo">🛡️ Emergency Ready</a>
+      <a href="index.html" class="back-link">← Back to Home</a>
+    </div>
+  </header>
+  
+  <main>
+    <h1>Request Data Deletion</h1>
+    <p class="subtitle">Your Right to Be Forgotten</p>
+    
+    <h2>Your Data Deletion Rights</h2>
+    <p>Under various privacy laws including GDPR (European Union), CCPA (California), and other applicable regulations, you have the right to request the deletion of your personal data. We respect this right and have established a clear process for handling deletion requests.</p>
+    
+    <h2>What Happens When You Request Deletion</h2>
+    <p>When we receive and verify your data deletion request, we will process it according to the following guidelines:</p>
+    
+    <h3>Data We Will Delete:</h3>
+    <ul>
+      <li><strong>Account Information:</strong> Your email address, user ID, and profile data</li>
+      <li><strong>Subscription Records:</strong> Your subscription will be cancelled and billing information removed from our systems (Stripe may retain transaction records as required by law)</li>
+      <li><strong>Usage Data:</strong> Your app usage history and preferences stored on our servers</li>
+      <li><strong>Push Notification Tokens:</strong> Your device tokens for notifications</li>
+      <li><strong>Support History:</strong> Any support tickets or communications (unless required for legal purposes)</li>
+    </ul>
+    
+    <h3>Data Stored Locally (Your Responsibility):</h3>
+    <ul>
+      <li><strong>Documents & Photos:</strong> Files stored in the Document Storage feature are on YOUR device only - uninstall the app to remove them</li>
+      <li><strong>Emergency Contacts:</strong> Contact information stored locally on your device</li>
+      <li><strong>Checklist Progress:</strong> Your preparedness checklist data</li>
+      <li><strong>App Preferences:</strong> Settings and preferences stored on your device</li>
+    </ul>
+    
+    <h3>Data We May Retain:</h3>
+    <ul>
+      <li><strong>Transaction Records:</strong> Payment history may be retained for up to 7 years for tax and legal compliance</li>
+      <li><strong>Legal Obligations:</strong> Data required to comply with legal obligations, resolve disputes, or enforce agreements</li>
+      <li><strong>Anonymized Data:</strong> Aggregated, anonymized data that cannot identify you may be retained for analytics</li>
+    </ul>
+    
+    <h2>Deletion Timeline</h2>
+    <table class="timeline-table">
+      <tr>
+        <th>Step</th>
+        <th>Timeline</th>
+      </tr>
+      <tr>
+        <td>Request Acknowledgment</td>
+        <td>Within 48 hours</td>
+      </tr>
+      <tr>
+        <td>Identity Verification</td>
+        <td>1-3 business days</td>
+      </tr>
+      <tr>
+        <td>Data Deletion Completed</td>
+        <td>Within 30 days of verification</td>
+      </tr>
+      <tr>
+        <td>Confirmation Email</td>
+        <td>Upon completion</td>
+      </tr>
+    </table>
+    
+    <h2>How to Submit a Deletion Request</h2>
+    <div class="steps">
+      <div class="step">
+        <strong>Send an email</strong> to <a href="mailto:stratosxtech@gmail.com?subject=Data%20Deletion%20Request">stratosxtech@gmail.com</a>
+      </div>
+      <div class="step">
+        <strong>Use the subject line:</strong> "Data Deletion Request"
+      </div>
+      <div class="step">
+        <strong>Include in your email:</strong>
+        <ul>
+          <li>The email address associated with your Emergency Ready account</li>
+          <li>Your full name (as registered)</li>
+          <li>Confirmation that you understand this action is irreversible</li>
+        </ul>
+      </div>
+      <div class="step">
+        <strong>Verification:</strong> We may ask you to verify your identity by responding from your registered email address
+      </div>
+    </div>
+    
+    <h2>Important Considerations</h2>
+    <div class="warning-box">
+      <h3>⚠️ Before You Request Deletion</h3>
+      <ul>
+        <li><strong>Irreversible Action:</strong> Data deletion is permanent and cannot be undone. You will lose access to your account and all associated data.</li>
+        <li><strong>Active Subscription:</strong> If you have an active subscription, it will be cancelled. No refunds are provided for unused subscription time.</li>
+        <li><strong>Re-registration:</strong> You may create a new account after deletion, but your previous data cannot be restored.</li>
+      </ul>
+    </div>
+    
+    <div class="info-box">
+      <h3>ℹ️ Quick Tip</h3>
+      <p>For immediate removal of locally stored data (documents, photos, contacts), you can simply uninstall the Emergency Ready app from your device. This will remove all data stored on your device.</p>
+    </div>
+    
+    <div class="contact-box">
+      <h3>Submit Your Data Deletion Request</h3>
+      <p>Click the button below to send us an email requesting deletion of your data.</p>
+      <a href="mailto:stratosxtech@gmail.com?subject=Data%20Deletion%20Request&body=Hello%2C%0A%0AI%20would%20like%20to%20request%20deletion%20of%20my%20personal%20data%20from%20Emergency%20Ready.%0A%0AAccount%20Email%3A%20%5BYour%20registered%20email%5D%0AFull%20Name%3A%20%5BYour%20name%5D%0A%0AI%20understand%20that%20this%20action%20is%20irreversible%20and%20my%20account%20will%20be%20permanently%20deleted.%0A%0AThank%20you." class="email-btn">📧 Request Data Deletion</a>
+      <p style="margin-top: 1.5rem; font-size: 0.875rem;">Response Time: We will acknowledge your request within 48 hours</p>
+    </div>
+  </main>
+  
+  <footer>
+    <p>© 2026 StratosX Tech. All rights reserved.</p>
+    <p style="margin-top: 0.5rem;">
+      <a href="index.html">Home</a> · 
+      <a href="privacy.html">Privacy Policy</a> · 
+      <a href="terms.html">Terms of Service</a>
+    </p>
+  </footer>
+</body>
+</html>
