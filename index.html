@@ -782,14 +782,98 @@ footer {
   .reach-strip { grid-template-columns: repeat(3, 1fr); }
   .foot-grid { grid-template-columns: 1fr 1fr; }
 }
-@media (max-width: 600px) {
-  .feat-grid { grid-template-columns: 1fr; }
-  .dis-grid { grid-template-columns: repeat(2, 1fr); }
-  .reach-strip { grid-template-columns: repeat(2, 1fr); }
-  .price-cards { grid-template-columns: 1fr; max-width: 360px; }
-  .dl-buttons { flex-direction: column; align-items: center; }
+
+/* ── MOBILE (≤ 768px) ── */
+@media (max-width: 768px) {
+  /* Prevent ALL horizontal overflow */
+  html, body { overflow-x: hidden; max-width: 100vw; }
+  * { max-width: 100%; }
+
+  /* Nav */
+  .nav-inner { padding: 0 16px; }
   .nav-links { display: none; }
-  .foot-grid { grid-template-columns: 1fr; }
+  .nav-cta .btn-ghost { display: none; }
+
+  /* Container */
+  .container { padding: 0 16px; }
+
+  /* Hero */
+  .hero { padding: 60px 0 40px; min-height: auto; }
+  .hero-inner { grid-template-columns: 1fr; gap: 32px; }
+  .phone-frame { display: none; }
+  .hero-h1 { font-size: clamp(52px, 14vw, 80px); }
+  .hero-sub { font-size: 16px; }
+  .hero-actions { flex-direction: column; gap: 10px; }
+  .hero-btn-primary, .hero-btn-secondary { width: 100%; justify-content: center; }
+  .hero-mini-stats { gap: 20px; flex-wrap: wrap; }
+
+  /* Ticker */
+  .ticker-item { padding: 0 20px; font-size: 10px; }
+
+  /* Section base */
+  section { padding: 60px 0; }
+  .sec-h2 { font-size: clamp(36px, 10vw, 56px); }
+
+  /* Audience insight band — 1x2 then 1x3 stacked */
+  .audience-grid { grid-template-columns: 1fr !important; }
+  .audience-stats { grid-template-columns: 1fr !important; }
+
+  /* Why section */
+  .why-grid { grid-template-columns: 1fr; gap: 32px; }
+  .stat-num { font-size: 36px; min-width: 80px; }
+
+  /* AI Assistant section — stack columns */
+  .ai-section-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+
+  /* Quick Actions — 1 column on mobile */
+  .quick-actions-grid { grid-template-columns: 1fr !important; }
+
+  /* Features */
+  .feat-grid { grid-template-columns: 1fr; }
+
+  /* AI Advisor section — stack */
+  .ai-advisor-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+
+  /* Disaster grid */
+  .dis-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Travel section — stack */
+  .travel-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+
+  /* Country grid inside travel card */
+  .country-inner-grid { grid-template-columns: repeat(4, 1fr) !important; }
+
+  /* Global reach strip */
+  .reach-strip { grid-template-columns: repeat(2, 1fr); }
+
+  /* No Other App grid — 1 column */
+  .exclusive-grid { grid-template-columns: 1fr !important; }
+
+  /* Bottom callout flex */
+  .callout-flex { flex-direction: column !important; gap: 20px !important; padding: 24px 20px !important; }
+  .callout-flex a { width: 100%; justify-content: center; }
+
+  /* Pricing */
+  .price-cards { grid-template-columns: 1fr; max-width: 100%; margin: 0 auto; }
+
+  /* Download buttons */
+  .dl-buttons { flex-direction: column; align-items: stretch; }
+  .dl-btn { justify-content: center; }
+
+  /* Footer */
+  .foot-grid { grid-template-columns: 1fr; gap: 32px; }
+}
+
+/* ── SMALL MOBILE (≤ 480px) ── */
+@media (max-width: 480px) {
+  .hero-h1 { font-size: clamp(44px, 13vw, 64px); }
+  .sec-h2 { font-size: clamp(32px, 11vw, 48px); }
+  .hero-mini-stats { gap: 16px; }
+  .mini-num { font-size: 36px; }
+  .dis-grid { grid-template-columns: 1fr 1fr; }
+  .reach-strip { grid-template-columns: 1fr 1fr; }
+  .ticker-item { font-size: 9px; padding: 0 14px; }
+  .nav-cta .btn-red { font-size: 12px; padding: 8px 14px; }
 }
 
 /* Scroll reveal */
@@ -976,12 +1060,12 @@ footer {
 <!-- AUDIENCE INSIGHT BAND -->
 <div style="background:linear-gradient(135deg,rgba(212,103,138,0.06) 0%,rgba(10,22,40,0.0) 100%);border-top:1px solid rgba(212,103,138,0.15);border-bottom:1px solid rgba(212,103,138,0.15);padding:40px 0;">
   <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 2fr;gap:48px;align-items:center;">
+    <div class="audience-grid" style="display:grid;grid-template-columns:1fr 2fr;gap:48px;align-items:center;">
       <div>
         <p style="font-family:'Space Mono',monospace;font-size:10px;color:var(--rose);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;">// Built for Every Family</p>
         <h3 style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--white);line-height:1;margin-bottom:0;">Women Lead<br/>Family Safety.<br/><span style="color:var(--rose);">The Data Is Clear.</span></h3>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      <div class="audience-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
         <div style="background:rgba(212,103,138,0.07);border:1px solid rgba(212,103,138,0.2);border-radius:3px;padding:20px 18px;">
           <span style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--white);display:block;line-height:1;margin-bottom:6px;">Faster<span style="color:var(--rose);">↑</span></span>
           <span style="font-size:13px;color:var(--muted);line-height:1.5;">Women are quicker to prepare and evacuate during emergencies than men — University of Colorado</span>
@@ -1048,7 +1132,7 @@ footer {
 <!-- AI EMERGENCY ASSISTANT SECTION -->
 <section style="padding:96px 0;background:var(--navy2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
   <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;">
+    <div class="ai-section-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;">
 
       <!-- LEFT — Copy -->
       <div class="reveal">
@@ -1147,7 +1231,7 @@ footer {
       <h2 class="sec-h2">Everything in<br/>One <em>Tap.</em></h2>
       <p class="sec-desc" style="margin:0 auto;">Every critical tool available instantly from your home screen. No searching, no delays — just the information you need when you need it most.</p>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;" class="reveal">
+    <div class="quick-actions-grid reveal" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
       <div style="background:linear-gradient(135deg,#E8252A,#8B1A1D);border-radius:8px;padding:22px 20px;display:flex;align-items:center;gap:14px;position:relative;">
         <span style="font-size:32px;">🤖</span>
         <div>
@@ -1261,7 +1345,7 @@ footer {
   <!-- glow -->
   <div style="position:absolute;top:50%;left:60%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(232,37,42,0.06) 0%,transparent 65%);pointer-events:none;"></div>
   <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;">
+    <div class="ai-advisor-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;">
 
       <!-- Left — Chat Preview -->
       <div class="reveal">
@@ -1403,7 +1487,7 @@ footer {
 <section style="padding:96px 0;background:var(--navy);border-top:1px solid var(--border);border-bottom:1px solid var(--border);position:relative;overflow:hidden;">
   <div style="position:absolute;top:0;right:-100px;width:600px;height:100%;background:radial-gradient(ellipse at right,rgba(212,103,138,0.05) 0%,transparent 65%);pointer-events:none;"></div>
   <div class="container">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;">
+    <div class="travel-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;">
 
       <!-- Left — Copy -->
       <div class="reveal">
@@ -1429,7 +1513,7 @@ footer {
         <div style="background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:28px;position:relative;overflow:hidden;">
           <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--rose),var(--red));"></div>
           <p style="font-family:'Space Mono',monospace;font-size:10px;color:var(--rose);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">// 50+ Countries Covered</p>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">
+          <div class="country-inner-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">
             <!-- Country cards -->
             <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇺🇸</div>
             <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇬🇧</div>
@@ -1508,7 +1592,7 @@ footer {
     </div>
 
     <!-- 6 exclusive features — 3 col grid -->
-    <div class="reveal" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:32px;">
+    <div class="exclusive-grid reveal" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:32px;">
 
       <div style="background:var(--navy2);padding:36px 30px;position:relative;overflow:hidden;transition:background 0.25s;" onmouseover="this.style.background='rgba(232,37,42,0.05)'" onmouseout="this.style.background='var(--navy2)'">
         <div style="position:absolute;top:0;left:0;width:0;height:2px;background:var(--red);transition:width 0.35s;"></div>
@@ -1556,7 +1640,7 @@ footer {
     </div>
 
     <!-- Bottom callout -->
-    <div class="reveal" style="background:linear-gradient(135deg,rgba(232,37,42,0.08) 0%,rgba(212,103,138,0.05) 100%);border:1px solid rgba(232,37,42,0.2);border-radius:4px;padding:36px 40px;display:flex;align-items:center;gap:32px;flex-wrap:wrap;">
+    <div class="callout-flex reveal" style="background:linear-gradient(135deg,rgba(232,37,42,0.08) 0%,rgba(212,103,138,0.05) 100%);border:1px solid rgba(232,37,42,0.2);border-radius:4px;padding:36px 40px;display:flex;align-items:center;gap:32px;flex-wrap:wrap;">
       <div style="flex:1;min-width:280px;">
         <p style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--white);line-height:1;margin-bottom:10px;">Six Features. <span style="color:var(--red);">Zero Alternatives.</span></p>
         <p style="font-size:15px;color:var(--muted);line-height:1.75;">Every feature above is exclusive to Emergency Ready. You would need four to six separate apps — and several paid subscriptions — to match what Emergency Ready delivers in one place, free to start.</p>
