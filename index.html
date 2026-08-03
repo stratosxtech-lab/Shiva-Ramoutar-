@@ -1,1269 +1,1733 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Emergency Ready - Your Personal Emergency Preparedness Companion</title>
-  <meta name="description" content="Be prepared for any emergency, anywhere in the world. Weather alerts, hurricane tracking, emergency contacts, and more. Available in 80+ countries.">
-  <meta name="keywords" content="emergency preparedness, weather alerts, hurricane tracker, emergency app, disaster preparedness">
-  <link rel="icon" type="image/png" href="assets/icon.png">
-  
-  <!-- Open Graph -->
-  <meta property="og:title" content="Emergency Ready - Be Prepared for Anything">
-  <meta property="og:description" content="Your personal emergency preparedness companion. Real-time weather alerts, hurricane tracking, and emergency resources for 80+ countries.">
-  <meta property="og:image" content="assets/og-image.png">
-  <meta property="og:url" content="https://emergency-global.com">
-  <meta property="og:type" content="website">
-  
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    :root {
-      --primary: #1e3a5f;
-      --primary-light: #2d4a6f;
-      --accent: #3b82f6;
-      --accent-light: #60a5fa;
-      --background: #ffffff;
-      --surface: #f8fafc;
-      --foreground: #11181C;
-      --muted: #687076;
-      --border: #e2e8f0;
-      --success: #22c55e;
-      --warning: #f59e0b;
-      --error: #ef4444;
-    }
-    
-    html {
-      scroll-behavior: smooth;
-    }
-    
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: var(--foreground);
-      background: var(--background);
-      line-height: 1.6;
-    }
-    
-    /* Navigation */
-    nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      z-index: 1000;
-      padding: 1rem 2rem;
-    }
-    
-    .nav-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-      color: var(--primary);
-    }
-    
-    .logo img {
-      width: 56px;
-      height: 56px;
-      border-radius: 10px;
-    }
-    
-    .logo span {
-      font-weight: 700;
-      font-size: 1.25rem;
-    }
-    
-    .nav-links {
-      display: flex;
-      gap: 2rem;
-      align-items: center;
-    }
-    
-    .nav-links a {
-      text-decoration: none;
-      color: var(--muted);
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-    
-    .nav-links a:hover {
-      color: var(--primary);
-    }
-    
-    .nav-cta {
-      background: var(--primary);
-      color: white !important;
-      padding: 0.75rem 1.5rem;
-      border-radius: 50px;
-      transition: background 0.2s, transform 0.2s;
-    }
-    
-    .nav-cta:hover {
-      background: var(--primary-light);
-      transform: translateY(-2px);
-    }
-    
-    /* Hero Section */
-    .hero {
-      padding: 8rem 2rem 4rem;
-      background: linear-gradient(135deg, var(--surface) 0%, #e0f2fe 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-    }
-    
-    .hero-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4rem;
-      align-items: center;
-    }
-    
-    .hero-content h1 {
-      font-size: 3.5rem;
-      font-weight: 800;
-      line-height: 1.1;
-      margin-bottom: 1.5rem;
-      color: var(--primary);
-    }
-    
-    .hero-content h1 span {
-      background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    
-    .hero-content p {
-      font-size: 1.25rem;
-      color: var(--muted);
-      margin-bottom: 2rem;
-      max-width: 500px;
-    }
-    
-    .hero-buttons {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-    
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--primary);
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 600;
-      transition: all 0.2s;
-      box-shadow: 0 4px 14px rgba(30, 58, 95, 0.3);
-    }
-    
-    .btn-primary:hover {
-      background: var(--primary-light);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(30, 58, 95, 0.4);
-    }
-    
-    .btn-secondary {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: white;
-      color: var(--primary);
-      padding: 1rem 2rem;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 600;
-      border: 2px solid var(--border);
-      transition: all 0.2s;
-    }
-    
-    .btn-secondary:hover {
-      border-color: var(--primary);
-      transform: translateY(-2px);
-    }
-    
-    .hero-stats {
-      display: flex;
-      gap: 2rem;
-      margin-top: 3rem;
-    }
-    
-    .stat {
-      text-align: center;
-    }
-    
-    .stat-number {
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--primary);
-    }
-    
-    .stat-label {
-      font-size: 0.875rem;
-      color: var(--muted);
-    }
-    
-    .hero-image {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    .phone-mockup {
-      position: relative;
-      width: 300px;
-      height: 600px;
-      background: #1a1a1a;
-      border-radius: 40px;
-      padding: 12px;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-    }
-    
-    .phone-screen {
-      width: 100%;
-      height: 100%;
-      background: var(--background);
-      border-radius: 32px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .phone-header {
-      background: var(--primary);
-      color: white;
-      padding: 3rem 1.5rem 1.5rem;
-      text-align: center;
-    }
-    
-    .phone-header h3 {
-      font-size: 1.25rem;
-      margin-bottom: 0.25rem;
-    }
-    
-    .phone-header p {
-      font-size: 0.75rem;
-      opacity: 0.8;
-    }
-    
-    .phone-content {
-      padding: 1rem;
-      flex: 1;
-    }
-    
-    .mini-card {
-      background: var(--surface);
-      border-radius: 12px;
-      padding: 1rem;
-      margin-bottom: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    
-    .mini-card-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-    }
-    
-    .mini-card-text h4 {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--foreground);
-    }
-    
-    .mini-card-text p {
-      font-size: 0.7rem;
-      color: var(--muted);
-    }
-    
-    /* Features Section */
-    .features {
-      padding: 6rem 2rem;
-      background: var(--background);
-    }
-    
-    .section-container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    
-    .section-header {
-      text-align: center;
-      margin-bottom: 4rem;
-    }
-    
-    .section-header h2 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 1rem;
-    }
-    
-    .section-header p {
-      font-size: 1.125rem;
-      color: var(--muted);
-      max-width: 600px;
-      margin: 0 auto;
-    }
-    
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2rem;
-    }
-    
-    .feature-card {
-      background: var(--surface);
-      border-radius: 20px;
-      padding: 2rem;
-      transition: transform 0.2s, box-shadow 0.2s;
-      border: 1px solid var(--border);
-    }
-    
-    .feature-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    }
-    
-    .feature-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.75rem;
-      margin-bottom: 1.5rem;
-    }
-    
-    .feature-card h3 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--foreground);
-      margin-bottom: 0.75rem;
-    }
-    
-    .feature-card p {
-      color: var(--muted);
-      font-size: 0.95rem;
-    }
-    
-    /* Pricing Section */
-    .pricing {
-      padding: 6rem 2rem;
-      background: linear-gradient(135deg, var(--primary) 0%, #2d4a6f 100%);
-      color: white;
-    }
-    
-    .pricing .section-header h2 {
-      color: white;
-    }
-    
-    .pricing .section-header p {
-      color: rgba(255, 255, 255, 0.8);
-    }
-    
-    .pricing-cards {
-      display: flex;
-      gap: 2rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    
-    .pricing-card {
-      max-width: 420px;
-      flex: 1;
-      min-width: 300px;
-      background: white;
-      border-radius: 24px;
-      padding: 2.5rem;
-      text-align: center;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-      position: relative;
-    }
-    
-    .pricing-card.popular {
-      border: 3px solid var(--accent);
-      transform: scale(1.03);
-    }
-    
-    .popular-tag {
-      position: absolute;
-      top: -14px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
-      color: white;
-      padding: 0.4rem 1.5rem;
-      border-radius: 50px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-    
-    .pricing-save {
-      display: inline-block;
-      background: #dcfce7;
-      color: #16a34a;
-      padding: 0.25rem 0.75rem;
-      border-radius: 50px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-    
-    .pricing-badge {
-      display: inline-block;
-      background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);
-      color: white;
-      padding: 0.5rem 1.5rem;
-      border-radius: 50px;
-      font-size: 0.875rem;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-    }
-    
-    .pricing-price {
-      margin-bottom: 1.5rem;
-    }
-    
-    .pricing-price .amount {
-      font-size: 4rem;
-      font-weight: 800;
-      color: var(--primary);
-    }
-    
-    .pricing-price .period {
-      font-size: 1.25rem;
-      color: var(--muted);
-    }
-    
-    .pricing-features {
-      text-align: left;
-      margin-bottom: 2rem;
-    }
-    
-    .pricing-feature {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid var(--border);
-      color: var(--foreground);
-    }
-    
-    .pricing-feature:last-child {
-      border-bottom: none;
-    }
-    
-    .pricing-feature .check {
-      color: var(--success);
-      font-size: 1.25rem;
-    }
-    
-    .pricing-cta {
-      display: block;
-      background: var(--primary);
-      color: white;
-      padding: 1.25rem 2rem;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 1.125rem;
-      transition: all 0.2s;
-    }
-    
-    .pricing-cta:hover {
-      background: var(--primary-light);
-      transform: translateY(-2px);
-    }
-    
-    /* Countries Section */
-    .countries {
-      padding: 6rem 2rem;
-      background: var(--surface);
-    }
-    
-    .countries-grid {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-    
-    .country-flag {
-      font-size: 2rem;
-      padding: 0.5rem;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    }
-    
-    /* Footer */
-    footer {
-      background: var(--foreground);
-      color: white;
-      padding: 4rem 2rem 2rem;
-    }
-    
-    .footer-container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-    
-    .footer-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 3rem;
-      margin-bottom: 3rem;
-    }
-    
-    .footer-brand h3 {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    
-    .footer-brand p {
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 1.5rem;
-    }
-    
-    .footer-column h4 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 1.5rem;
-    }
-    
-    .footer-column a {
-      display: block;
-      color: rgba(255, 255, 255, 0.7);
-      text-decoration: none;
-      margin-bottom: 0.75rem;
-      transition: color 0.2s;
-    }
-    
-    .footer-column a:hover {
-      color: white;
-    }
-    
-    .footer-bottom {
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding-top: 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    
-    .footer-bottom p {
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 0.875rem;
-    }
-    
-    /* Download Section */
-    .download {
-      padding: 6rem 2rem;
-      background: var(--background);
-    }
-    
-    .download-grid {
-      display: flex;
-      gap: 3rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 2rem;
-    }
-    
-    .download-card {
-      text-align: center;
-      background: var(--surface);
-      border-radius: 20px;
-      padding: 2.5rem;
-      border: 1px solid var(--border);
-      transition: transform 0.2s, box-shadow 0.2s;
-      max-width: 320px;
-    }
-    
-    .download-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    }
-    
-    .download-card img.qr-code {
-      width: 200px;
-      height: 200px;
-      margin: 0 auto 1.5rem;
-      display: block;
-    }
-    
-    .download-card h3 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--foreground);
-      margin-bottom: 0.5rem;
-    }
-    
-    .download-card p {
-      color: var(--muted);
-      font-size: 0.95rem;
-      margin-bottom: 1.5rem;
-    }
-    
-    .store-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.875rem 1.75rem;
-      border-radius: 50px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 1rem;
-      transition: all 0.2s;
-    }
-    
-    .store-btn:hover {
-      transform: translateY(-2px);
-    }
-    
-    .store-btn-apple {
-      background: #000000;
-      color: white;
-    }
-    
-    .store-btn-apple:hover {
-      background: #333333;
-    }
-    
-    .store-btn-google {
-      background: var(--primary);
-      color: white;
-    }
-    
-    .store-btn-google:hover {
-      background: var(--primary-light);
-    }
-    
-    /* Legal Sections */
-    .legal-section {
-      padding: 6rem 2rem;
-      background: var(--background);
-    }
-    
-    .legal-content {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    
-    .legal-content h2 {
-      font-size: 2rem;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 1rem;
-    }
-    
-    .legal-content h3 {
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--foreground);
-      margin-top: 2rem;
-      margin-bottom: 1rem;
-    }
-    
-    .legal-content p {
-      color: var(--muted);
-      margin-bottom: 1rem;
-    }
-    
-    .legal-content ul {
-      color: var(--muted);
-      margin-left: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    
-    .legal-content li {
-      margin-bottom: 0.5rem;
-    }
-    
-    .contact-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      margin-top: 2rem;
-    }
-    
-    .contact-box h4 {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--foreground);
-      margin-bottom: 0.5rem;
-    }
-    
-    .contact-box a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-    
-    .contact-box a:hover {
-      text-decoration: underline;
-    }
-    
-    /* Mobile Menu */
-    .mobile-menu-btn {
-      display: none;
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--primary);
-    }
-    
-    /* Responsive */
-    @media (max-width: 1024px) {
-      .hero-container {
-        grid-template-columns: 1fr;
-        text-align: center;
-      }
-      
-      .hero-content p {
-        margin: 0 auto 2rem;
-      }
-      
-      .hero-buttons {
-        justify-content: center;
-      }
-      
-      .hero-stats {
-        justify-content: center;
-      }
-      
-      .hero-image {
-        order: -1;
-      }
-      
-      .phone-mockup {
-        width: 250px;
-        height: 500px;
-      }
-      
-      .features-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      
-      .footer-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-    
-    @media (max-width: 768px) {
-      .nav-links {
-        display: none;
-      }
-      
-      .mobile-menu-btn {
-        display: block;
-      }
-      
-      .hero-content h1 {
-        font-size: 2.5rem;
-      }
-      
-      .features-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .footer-grid {
-        grid-template-columns: 1fr;
-        text-align: center;
-      }
-      
-      .footer-bottom {
-        flex-direction: column;
-        text-align: center;
-      }
-    }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+<meta name="x-apple-disable-message-reformatting"/>
+
+<!-- ── SEO META ── -->
+<title>Emergency Ready — Be Prepared. Stay Safe. | Disaster Preparedness App</title>
+<meta name="description" content="Emergency Ready is the all-in-one disaster preparedness app. Six emergency categories, 50+ countries, AI assistant, offline document vault, shelter locator and GoBag checklists. Free on iOS and Android."/>
+<meta name="keywords" content="emergency preparedness app, disaster preparedness, hurricane app, wildfire safety, earthquake preparedness, emergency checklist, GoBag, family safety, emergency ready"/>
+<meta name="author" content="StratosX Technologies"/>
+<meta name="robots" content="index, follow"/>
+<link rel="canonical" href="https://www.emergency-global.com"/>
+
+<!-- ── OPEN GRAPH (Facebook, LinkedIn) ── -->
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://www.emergency-global.com"/>
+<meta property="og:title" content="Emergency Ready — Be Prepared. Stay Safe."/>
+<meta property="og:description" content="The all-in-one disaster preparedness app. Six emergency categories, 50+ countries, AI assistant, and offline document vault. Free on iOS and Android."/>
+<meta property="og:image" content="https://www.emergency-global.com/og-image.png"/>
+<meta property="og:site_name" content="Emergency Ready"/>
+<meta property="og:locale" content="en_US"/>
+
+<!-- ── TWITTER CARD ── -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Emergency Ready — Be Prepared. Stay Safe."/>
+<meta name="twitter:description" content="The all-in-one disaster preparedness app. Free on iOS and Android."/>
+<meta name="twitter:image" content="https://www.emergency-global.com/og-image.png"/>
+
+<!-- ── MOBILE / PWA ── -->
+<meta name="theme-color" content="#07101F"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Emergency Ready"/>
+
+<!-- ── FAVICON ── -->
+<link rel="icon" type="image/png" href="/favicon.png"/>
+<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+
+<!-- ── FONTS ── -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+
+<style>
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+:root {
+  --navy:   #07101F;
+  --navy2:  #0A1628;
+  --navy3:  #0E1E35;
+  --navy4:  #122040;
+  --red:    #E8252A;
+  --red2:   #FF3B40;
+  --rose:   #D4678A;
+  --rose-dim: rgba(212,103,138,0.12);
+  --rose-border: rgba(212,103,138,0.25);
+  --white:  #F0F4FA;
+  --muted:  #7A8FAD;
+  --dim:    #3A4862;
+  --border: rgba(255,255,255,0.07);
+  --radius: 3px;
+}
+
+body {
+  background: var(--navy);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ── CONCEPT BADGE ── */
+
+/* ── NAV ── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(7,16,31,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 68px;
+}
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.bolt {
+  width: 28px; height: 28px;
+  background: var(--red);
+  clip-path: polygon(62% 0%,100% 0%,38% 52%,76% 52%,0% 100%,28% 52%,0% 52%);
+  flex-shrink: 0;
+  animation: pulse 3s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{filter:drop-shadow(0 0 0 transparent)} 50%{filter:drop-shadow(0 0 8px rgba(232,37,42,0.6))} }
+.nav-brand { font-weight: 700; font-size: 17px; color: var(--white); letter-spacing: 0.3px; }
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+.nav-links a {
+  font-size: 14px;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 400;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--white); }
+.nav-cta {
+  display: flex;
+  gap: 10px;
+}
+.btn {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 22px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  border: none;
+  display: inline-block;
+}
+.btn-red { background: var(--red); color: #fff; }
+.btn-red:hover { background: var(--red2); transform: translateY(-1px); }
+.btn-ghost { background: transparent; color: var(--white); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: rgba(255,255,255,0.2); }
+
+/* ── CONTAINER ── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 94vh;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  padding: 80px 0 60px;
+}
+/* Grid */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at 30% 50%, black 20%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at 30% 50%, black 20%, transparent 75%);
+}
+/* Dual glow — red and rose */
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: -10%;
+  width: 700px;
+  height: 700px;
+  background: radial-gradient(circle, rgba(232,37,42,0.07) 0%, rgba(212,103,138,0.05) 40%, transparent 65%);
+  pointer-events: none;
+}
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+  width: 100%;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(212,103,138,0.08);
+  border: 1px solid rgba(212,103,138,0.22);
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: #e8a0bb;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+.live-dot {
+  width: 6px; height: 6px;
+  background: var(--rose);
+  border-radius: 50%;
+  animation: blink 1.4s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.hero-h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(72px, 10vw, 116px);
+  line-height: 0.92;
+  letter-spacing: 0.5px;
+  margin-bottom: 28px;
+}
+.hero-h1 .outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(240,244,250,0.2);
+}
+.hero-h1 .accent { color: var(--red); }
+.hero-sub {
+  font-size: 18px;
+  color: var(--muted);
+  line-height: 1.75;
+  max-width: 480px;
+  margin-bottom: 40px;
+}
+.hero-sub strong { color: var(--white); font-weight: 500; }
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 52px;
+}
+.hero-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--red);
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 14px 28px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.hero-btn-primary:hover { background: var(--red2); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(232,37,42,0.25); }
+.hero-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  color: var(--white);
+  font-weight: 500;
+  font-size: 15px;
+  padding: 13px 26px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.hero-btn-secondary:hover { border-color: rgba(255,255,255,0.2); }
+.hero-mini-stats {
+  display: flex;
+  gap: 36px;
+  padding-top: 36px;
+  border-top: 1px solid var(--border);
+}
+.mini-stat {}
+.mini-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 44px;
+  line-height: 1;
+  color: var(--white);
+  display: block;
+}
+.mini-num em { font-style: normal; color: var(--red); }
+.mini-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 4px;
+  display: block;
+}
+
+/* Hero right — app preview card */
+.hero-visual {
+  position: relative;
+}
+.phone-frame {
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.phone-frame::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--red), transparent);
+}
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.app-logo-sm {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--red) 0%, #8B1A1D 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.app-bolt-sm {
+  width: 16px; height: 16px;
+  background: #fff;
+  clip-path: polygon(62% 0%,100% 0%,38% 52%,76% 52%,0% 100%,28% 52%,0% 52%);
+}
+.app-title-sm { font-weight: 700; font-size: 15px; color: var(--white); }
+.app-sub-sm { font-size: 11px; color: var(--muted); }
+.premium-pill {
+  margin-left: auto;
+  background: rgba(232,37,42,0.12);
+  border: 1px solid rgba(232,37,42,0.3);
+  color: #ff9090;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+.app-section-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+.cat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.cat-card {
+  background: var(--navy2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 14px;
+  transition: border-color 0.2s;
+  position: relative;
+}
+.cat-card:hover { border-color: rgba(232,37,42,0.3); }
+.cat-badge {
+  position: absolute;
+  top: 8px; right: 8px;
+  font-size: 8px;
+  font-family: 'Space Mono', monospace;
+  padding: 2px 6px;
+  border-radius: 2px;
+  letter-spacing: 0.5px;
+}
+.badge-high { background: rgba(232,37,42,0.15); color: var(--red); border: 1px solid rgba(232,37,42,0.25); }
+.badge-low { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
+.cat-icon { font-size: 22px; display: block; margin-bottom: 6px; }
+.cat-name { font-size: 12px; font-weight: 600; color: var(--white); display: block; }
+.cat-desc { font-size: 10px; color: var(--muted); margin-top: 2px; display: block; }
+
+/* ── TICKER BAND ── */
+.ticker-band {
+  background: var(--navy3);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 0;
+  overflow: hidden;
+}
+.ticker-inner {
+  display: flex;
+  gap: 0;
+  animation: ticker 30s linear infinite;
+  width: max-content;
+}
+@keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+.ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 40px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  border-right: 1px solid var(--border);
+}
+.ticker-item em { font-style: normal; color: var(--red); font-weight: 700; }
+
+/* ── SECTION BASE ── */
+section { padding: 96px 0; }
+.sec-eye {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  color: var(--red);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sec-eye::before { content: '//'; color: var(--dim); }
+.sec-h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(44px, 6vw, 72px);
+  line-height: 1;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+}
+.sec-h2 em { font-style: normal; color: var(--red); }
+.sec-desc {
+  font-size: 17px;
+  color: var(--muted);
+  max-width: 540px;
+  line-height: 1.75;
+}
+
+/* ── WHY SECTION ── */
+.why-section { background: var(--navy2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.why-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 64px;
+  align-items: center;
+}
+.why-left {}
+.stat-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 40px;
+}
+.stat-block {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  transition: border-color 0.2s;
+}
+.stat-block:hover { border-color: rgba(232,37,42,0.3); }
+.stat-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px;
+  color: var(--white);
+  line-height: 1;
+  flex-shrink: 0;
+  min-width: 100px;
+}
+.stat-num em { font-style: normal; color: var(--red); }
+.stat-info {}
+.stat-label { font-weight: 600; font-size: 15px; color: var(--white); display: block; margin-bottom: 3px; }
+.stat-caption { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+/* Why right — quote */
+.quote-card {
+  background: rgba(232,37,42,0.06);
+  border: 1px solid rgba(232,37,42,0.2);
+  border-radius: 4px;
+  padding: 36px 32px;
+}
+.quote-mark {
+  font-size: 64px;
+  color: rgba(232,37,42,0.2);
+  line-height: 0.8;
+  font-family: Georgia, serif;
+  margin-bottom: 16px;
+  display: block;
+}
+.quote-text {
+  font-size: 20px;
+  font-family: Georgia, serif;
+  font-style: italic;
+  color: var(--white);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.quote-text em { font-style: normal; color: var(--red); }
+.quote-attr { font-size: 13px; color: var(--muted); }
+.quote-attr strong { color: var(--white); font-weight: 600; display: block; margin-bottom: 2px; }
+
+/* ── FEATURES ── */
+.feat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-top: 52px;
+}
+.feat-tile {
+  background: var(--navy2);
+  padding: 30px 26px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.25s;
+}
+.feat-tile::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  height: 2px; width: 0;
+  background: var(--red);
+  transition: width 0.35s;
+}
+.feat-tile:hover { background: rgba(232,37,42,0.04); }
+.feat-tile:hover::after { width: 100%; }
+.feat-icon { font-size: 32px; display: block; margin-bottom: 14px; }
+.feat-name { font-weight: 600; font-size: 15px; color: var(--white); margin-bottom: 8px; }
+.feat-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+/* ── DISASTER TYPES ── */
+.disaster-section { background: var(--navy2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.dis-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin-top: 48px;
+}
+.dis-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 12px;
+  text-align: center;
+  transition: all 0.25s;
+  cursor: default;
+}
+.dis-card:hover {
+  background: rgba(232,37,42,0.07);
+  border-color: rgba(232,37,42,0.3);
+  transform: translateY(-4px);
+}
+.dis-icon { font-size: 30px; display: block; margin-bottom: 8px; }
+.dis-name { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; }
+.dis-sub { font-size: 10px; color: var(--dim); margin-top: 4px; display: block; line-height: 1.4; }
+.dis-card:hover .dis-name { color: var(--white); }
+
+/* ── GLOBAL REACH ── */
+.reach-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-top: 48px;
+}
+.reach-cell {
+  padding: 28px 16px;
+  border-right: 1px solid var(--border);
+  text-align: center;
+}
+.reach-cell:last-child { border-right: none; }
+.reach-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px;
+  color: var(--white);
+  line-height: 1;
+  display: block;
+}
+.reach-num em { font-style: normal; color: var(--red); }
+.reach-label { font-size: 11px; color: var(--muted); display: block; margin-top: 6px; line-height: 1.4; }
+
+/* Flag row */
+.flag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 32px;
+  padding: 24px;
+  background: var(--navy3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.flag-row span { font-size: 28px; }
+
+/* ── PRICING ── */
+.pricing-section { background: var(--navy2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.price-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  max-width: 760px;
+  margin: 48px auto 0;
+}
+.price-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 36px 32px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+.price-card:hover { transform: translateY(-4px); }
+.price-card.featured {
+  background: rgba(232,37,42,0.06);
+  border-color: rgba(232,37,42,0.3);
+}
+.price-tag {
+  font-family: 'Space Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 14px;
+  display: block;
+}
+.price-card.featured .price-tag { color: #ff9090; }
+.price-amount {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 64px;
+  color: var(--white);
+  line-height: 1;
+  display: block;
+  margin-bottom: 4px;
+}
+.price-period { font-size: 13px; color: var(--muted); margin-bottom: 24px; display: block; }
+.price-features {
+  list-style: none;
+  text-align: left;
+  margin-bottom: 28px;
+}
+.price-features li {
+  font-size: 13px;
+  color: var(--muted);
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.price-features li:last-child { border-bottom: none; }
+.price-features li::before { content: '✓'; color: var(--red); font-weight: 700; }
+.price-cta {
+  display: block;
+  padding: 14px 0;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.price-cta-solid { background: var(--red); color: #fff; }
+.price-cta-solid:hover { background: var(--red2); }
+.price-cta-outline { border: 1px solid var(--border); color: var(--white); }
+.price-cta-outline:hover { border-color: rgba(255,255,255,0.25); }
+
+/* ── DOWNLOAD ── */
+.download-section {
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.download-section::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 700px; height: 700px;
+  background: radial-gradient(circle, rgba(232,37,42,0.05) 0%, rgba(212,103,138,0.05) 40%, transparent 65%);
+  pointer-events: none;
+}
+.download-h {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(56px, 9vw, 100px);
+  line-height: 0.95;
+  margin-bottom: 24px;
+}
+.download-h em { font-style: normal; color: var(--red); }
+.download-sub {
+  font-size: 18px;
+  color: var(--muted);
+  max-width: 480px;
+  margin: 0 auto 44px;
+  line-height: 1.75;
+}
+.dl-buttons {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+.dl-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 26px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: all 0.2s;
+  min-width: 200px;
+}
+.dl-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+.dl-btn-ios { background: var(--white); color: var(--navy); }
+.dl-btn-android { background: var(--navy3); color: var(--white); border: 1px solid var(--border); }
+.dl-btn-android:hover { background: #1a3054; }
+.dl-icon { font-size: 24px; }
+.dl-sub { font-size: 10px; display: block; margin-bottom: 2px; opacity: 0.6; }
+.dl-name { font-size: 16px; font-weight: 700; display: block; }
+.dl-btn-ios .dl-sub { color: #444; }
+
+/* ── FOOTER ── */
+footer {
+  background: #040B16;
+  border-top: 1px solid var(--border);
+  padding: 48px 0 32px;
+}
+.foot-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+.foot-brand-col {}
+.foot-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.foot-desc { font-size: 14px; color: var(--muted); line-height: 1.7; max-width: 280px; }
+.foot-col-title {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--white);
+  margin-bottom: 16px;
+}
+.foot-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.foot-links a { font-size: 13px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.foot-links a:hover { color: var(--red); }
+.foot-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.foot-copy { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--dim); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 960px) {
+  .hero-inner { grid-template-columns: 1fr; }
+  .phone-frame { display: none; }
+  .why-grid { grid-template-columns: 1fr; }
+  .feat-grid { grid-template-columns: 1fr 1fr; }
+  .dis-grid { grid-template-columns: repeat(3, 1fr); }
+  .reach-strip { grid-template-columns: repeat(3, 1fr); }
+  .foot-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .feat-grid { grid-template-columns: 1fr; }
+  .dis-grid { grid-template-columns: repeat(2, 1fr); }
+  .reach-strip { grid-template-columns: repeat(2, 1fr); }
+  .price-cards { grid-template-columns: 1fr; max-width: 360px; }
+  .dl-buttons { flex-direction: column; align-items: center; }
+  .nav-links { display: none; }
+  .foot-grid { grid-template-columns: 1fr; }
+}
+
+/* Scroll reveal */
+.reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.reveal.visible { opacity: 1; transform: none; }
+</style>
+<!-- ── STRUCTURED DATA ── -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "MobileApplication",
+  "name": "Emergency Ready",
+  "description": "The all-in-one disaster preparedness app. Six emergency categories, 50+ countries, AI assistant, offline document vault, shelter locator and GoBag checklists.",
+  "applicationCategory": "LifestyleApplication",
+  "operatingSystem": "iOS, Android",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "url": "https://www.emergency-global.com",
+  "downloadUrl": "https://apps.apple.com/us/app/emergency-ready-disaster-prep/id6758622433",
+  "publisher": {
+    "@type": "Organization",
+    "name": "StratosX Technologies",
+    "url": "https://www.emergency-global.com",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "email": "stratosxtech@gmail.com",
+      "contactType": "customer support"
+    }
+  }
+}
+</script>
 </head>
 <body>
-  <!-- Navigation -->
-  <nav>
-    <div class="nav-container">
-      <a href="#" class="logo">
-        <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663031454000/yYYLvzzbLxfKBmsF.png" alt="Emergency Ready" style="width: 40px; height: 40px; border-radius: 10px; object-fit: contain;">
-        <span>Emergency Ready</span>
+
+<!-- CONCEPT NOTICE -->
+
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="https://www.emergency-global.com" class="nav-logo">
+      <div class="bolt"></div>
+      <span class="nav-brand">Emergency Ready</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#disasters">Coverage</a>
+      <a href="#global">Global</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <div class="nav-cta">
+      <a href="mailto:stratosxtech@gmail.com" class="btn btn-ghost">Contact Us</a>
+      <a href="https://apps.apple.com/us/app/emergency-ready-disaster-prep/id6758622433" target="_blank" class="btn btn-red">Download Free</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <div class="hero-badge">
+          <div class="live-dot"></div>
+          Now on iOS and Android · Free to Start
+        </div>
+        <h1 class="hero-h1">
+          BE<br/>
+          <span class="outline">PREPARED.</span><br/>
+          <span class="accent">STAY SAFE.</span>
+        </h1>
+        <p class="hero-sub">
+          The all-in-one disaster preparedness app for <strong>every family, every city, every country.</strong> Six emergency categories. 80+ countries. Works offline when you need it most.
+        </p>
+        <div class="hero-actions">
+          <a href="https://apps.apple.com/us/app/emergency-ready-disaster-prep/id6758622433" target="_blank" class="hero-btn-primary">
+            🍎 App Store — Free
+          </a>
+          <a href="https://play.google.com/store/apps/details?id=space.manus.emergency.ready.t20251229182701" target="_blank" class="hero-btn-secondary">
+            ▶ Google Play — Free
+          </a>
+        </div>
+        <div class="hero-mini-stats">
+          <div class="mini-stat">
+            <span class="mini-num">80<em>+</em></span>
+            <span class="mini-label">Countries</span>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-num">6</span>
+            <span class="mini-label">Disaster Types</span>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-num">24<em>/7</em></span>
+            <span class="mini-label">AI Assistant</span>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-num"><em>$</em>0</span>
+            <span class="mini-label">To Start</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- App Preview Card -->
+      <div class="hero-visual">
+        <div class="phone-frame">
+          <div class="app-header">
+            <div class="app-logo-sm">
+              <div class="app-bolt-sm"></div>
+            </div>
+            <div>
+              <div class="app-title-sm">Emergency Ready</div>
+              <div class="app-sub-sm">Be prepared for any emergency</div>
+            </div>
+            <div class="premium-pill">⭐ Premium Active</div>
+          </div>
+          <div class="app-section-label">Select Emergency Type</div>
+          <div class="cat-grid">
+            <div class="cat-card">
+              <span class="cat-badge badge-high">HIGH</span>
+              <span class="cat-icon">⛈️</span>
+              <span class="cat-name">Severe Weather</span>
+              <span class="cat-desc">Hurricanes, tornadoes & snowstorms</span>
+            </div>
+            <div class="cat-card">
+              <span class="cat-badge badge-high">HIGH</span>
+              <span class="cat-icon">🌊</span>
+              <span class="cat-name">Flooding</span>
+              <span class="cat-desc">Flood preparation guide</span>
+            </div>
+            <div class="cat-card">
+              <span class="cat-badge badge-high">HIGH</span>
+              <span class="cat-icon">🔥</span>
+              <span class="cat-name">Fire</span>
+              <span class="cat-desc">Wildfire safety & evacuation</span>
+            </div>
+            <div class="cat-card">
+              <span class="cat-badge badge-high">HIGH</span>
+              <span class="cat-icon">📡</span>
+              <span class="cat-name">Seismic</span>
+              <span class="cat-desc">Earthquake safety & prep</span>
+            </div>
+            <div class="cat-card">
+              <span class="cat-badge badge-low">LOW</span>
+              <span class="cat-icon">🏛️</span>
+              <span class="cat-name">Gov. Disruption</span>
+              <span class="cat-desc">Shutdown preparedness</span>
+            </div>
+            <div class="cat-card">
+              <span class="cat-badge badge-low">GLOBAL</span>
+              <span class="cat-icon">✈️</span>
+              <span class="cat-name">Travel Checklist</span>
+              <span class="cat-desc">50+ countries · AI tips</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-band">
+  <div class="ticker-inner">
+    <div class="ticker-item">🔥 <em>800+</em> Active Wildfires — Canada</div>
+    <div class="ticker-item">🌡️ <em>40+</em> Heat Deaths — United States</div>
+    <div class="ticker-item">📡 <em>17,000</em> Homeless — Venezuela Earthquake</div>
+    <div class="ticker-item">⛈️ Typhoon Maysak — China · 50,000 Evacuated</div>
+    <div class="ticker-item">🌀 Atlantic Hurricane Season — Active Now</div>
+    <div class="ticker-item">🌊 Deadly Floods — Ghana and Kenya</div>
+    <div class="ticker-item">🔥 Colorado Wildfires — 200,000+ Acres Burned</div>
+    <div class="ticker-item">🔥 <em>800+</em> Active Wildfires — Canada</div>
+    <div class="ticker-item">🌡️ <em>40+</em> Heat Deaths — United States</div>
+    <div class="ticker-item">📡 <em>17,000</em> Homeless — Venezuela Earthquake</div>
+    <div class="ticker-item">⛈️ Typhoon Maysak — China · 50,000 Evacuated</div>
+    <div class="ticker-item">🌀 Atlantic Hurricane Season — Active Now</div>
+    <div class="ticker-item">🌊 Deadly Floods — Ghana and Kenya</div>
+    <div class="ticker-item">🔥 Colorado Wildfires — 200,000+ Acres Burned</div>
+  </div>
+</div>
+
+<!-- AUDIENCE INSIGHT BAND -->
+<div style="background:linear-gradient(135deg,rgba(212,103,138,0.06) 0%,rgba(10,22,40,0.0) 100%);border-top:1px solid rgba(212,103,138,0.15);border-bottom:1px solid rgba(212,103,138,0.15);padding:40px 0;">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:48px;align-items:center;">
+      <div>
+        <p style="font-family:'Space Mono',monospace;font-size:10px;color:var(--rose);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;">// Built for Every Family</p>
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--white);line-height:1;margin-bottom:0;">Women Lead<br/>Family Safety.<br/><span style="color:var(--rose);">The Data Is Clear.</span></h3>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+        <div style="background:rgba(212,103,138,0.07);border:1px solid rgba(212,103,138,0.2);border-radius:3px;padding:20px 18px;">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--white);display:block;line-height:1;margin-bottom:6px;">Faster<span style="color:var(--rose);">↑</span></span>
+          <span style="font-size:13px;color:var(--muted);line-height:1.5;">Women are quicker to prepare and evacuate during emergencies than men — University of Colorado</span>
+        </div>
+        <div style="background:rgba(212,103,138,0.07);border:1px solid rgba(212,103,138,0.2);border-radius:3px;padding:20px 18px;">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--white);display:block;line-height:1;margin-bottom:6px;">42<span style="color:var(--rose);">%</span></span>
+          <span style="font-size:13px;color:var(--muted);line-height:1.5;">of women are aware of local hazards — higher than men — yet remain the most underserved by preparedness tools</span>
+        </div>
+        <div style="background:rgba(212,103,138,0.07);border:1px solid rgba(212,103,138,0.2);border-radius:3px;padding:20px 18px;">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--white);display:block;line-height:1;margin-bottom:6px;">$2.9<span style="color:var(--rose);">B</span></span>
+          <span style="font-size:13px;color:var(--muted);line-height:1.5;">Women's safety app market by 2035 — the fastest growing segment in mobile safety technology</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WHY -->
+<section class="why-section">
+  <div class="container">
+    <div class="why-grid">
+      <div class="why-left reveal">
+        <p class="sec-eye">Why It Matters</p>
+        <h2 class="sec-h2">The Gap Is<br/><em>Real.</em></h2>
+        <p class="sec-desc">Disasters do not wait. Emergency Ready gives every family the same tools that disaster response professionals rely on — free to start, always with you.</p>
+        <div class="stat-row">
+          <div class="stat-block">
+            <span class="stat-num">39<em>%</em></span>
+            <div class="stat-info">
+              <span class="stat-label">Have an Emergency Plan</span>
+              <span class="stat-caption">Only 39% of Americans have a documented emergency plan. Emergency Ready closes that gap instantly.</span>
+            </div>
+          </div>
+          <div class="stat-block">
+            <span class="stat-num">3<em>x</em></span>
+            <div class="stat-info">
+              <span class="stat-label">Faster Recovery</span>
+              <span class="stat-caption">Prepared families recover up to 3x faster after a disaster and return to normal life sooner.</span>
+            </div>
+          </div>
+          <div class="stat-block">
+            <span class="stat-num">80<em>+</em></span>
+            <div class="stat-info">
+              <span class="stat-label">Countries Covered</span>
+              <span class="stat-caption">Localized emergency resources, contacts, and AI-powered tips wherever you are in the world.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="quote-card">
+          <span class="quote-mark">"</span>
+          <p class="quote-text">El Niño is not just on our doorstep, it is inside the house and turning up the heat. This is only a warm-up act. El Niño is strengthening — <em>adding fuel to a planet already on fire.</em></p>
+          <div class="quote-attr">
+            <strong>António Guterres</strong>
+            UN Secretary-General
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI EMERGENCY ASSISTANT SECTION -->
+<section style="padding:96px 0;background:var(--navy2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;">
+
+      <!-- LEFT — Copy -->
+      <div class="reveal">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(232,37,42,0.09);border:1px solid rgba(232,37,42,0.25);padding:5px 14px;border-radius:100px;margin-bottom:20px;">
+          <span style="width:6px;height:6px;background:#E8252A;border-radius:50%;display:inline-block;animation:blink 1.4s ease-in-out infinite;"></span>
+          <span style="font-family:'Space Mono',monospace;font-size:10px;color:#ffb0b0;letter-spacing:1.5px;text-transform:uppercase;">New Feature · Now Live</span>
+        </div>
+        <p style="font-family:'Space Mono',monospace;font-size:10px;color:var(--red);letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;">// AI Emergency Assistant</p>
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,6vw,68px);line-height:1;letter-spacing:0.5px;margin-bottom:20px;color:var(--white);">Instant Emergency<br/>Advice — <span style="color:#E8252A;">24/7.</span></h2>
+        <p style="font-size:17px;color:var(--muted);line-height:1.8;margin-bottom:24px;">The AI Emergency Assistant is your personal safety advisor, available around the clock. Ask it anything — what to pack, where to go, how to protect your family — and get instant, reliable guidance tailored to your exact situation.</p>
+        <p style="font-size:17px;color:var(--muted);line-height:1.8;margin-bottom:32px;">It navigates the checklists <strong style="color:var(--white);font-weight:500;">with you</strong>, not just for you — guiding each step in real time so no critical task gets missed when it matters most.</p>
+
+        <!-- Feature pills -->
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:36px;">
+          <span style="background:rgba(232,37,42,0.07);border:1px solid rgba(232,37,42,0.2);color:#ffb0b0;font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;">✓ Works Offline</span>
+          <span style="background:rgba(232,37,42,0.07);border:1px solid rgba(232,37,42,0.2);color:#ffb0b0;font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;">✓ All 6 Disaster Types</span>
+          <span style="background:rgba(232,37,42,0.07);border:1px solid rgba(232,37,42,0.2);color:#ffb0b0;font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;">✓ 59+ Countries</span>
+          <span style="background:rgba(232,37,42,0.07);border:1px solid rgba(232,37,42,0.2);color:#ffb0b0;font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;">✓ Instant Responses</span>
+          <span style="background:rgba(232,37,42,0.07);border:1px solid rgba(232,37,42,0.2);color:#ffb0b0;font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;">✓ Free with Premium</span>
+        </div>
+
+        <a href="https://apps.apple.com/us/app/emergency-ready-disaster-prep/id6758622433" target="_blank" style="display:inline-flex;align-items:center;gap:10px;background:#E8252A;color:#fff;font-weight:700;font-size:15px;padding:14px 28px;border-radius:3px;text-decoration:none;transition:all 0.2s;">🤖 Try the AI Assistant — Free</a>
+      </div>
+
+      <!-- RIGHT — Chat UI Mockup -->
+      <div class="reveal">
+        <div style="background:var(--navy3);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;">
+          <!-- Chat header -->
+          <div style="background:rgba(232,37,42,0.1);border-bottom:1px solid rgba(232,37,42,0.2);padding:16px 20px;display:flex;align-items:center;gap:12px;">
+            <div style="width:38px;height:38px;background:linear-gradient(135deg,#E8252A,#8B1A1D);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;">🤖</div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--white);">AI Emergency Assistant</div>
+              <div style="font-size:11px;color:#ffb0b0;">● Online · Get instant emergency advice</div>
+            </div>
+            <span style="margin-left:auto;background:#E8252A;color:#07101F;font-size:10px;font-weight:700;padding:3px 10px;border-radius:100px;letter-spacing:0.5px;">NEW</span>
+          </div>
+
+          <!-- Chat messages -->
+          <div style="padding:20px;display:flex;flex-direction:column;gap:14px;min-height:320px;">
+            <!-- User message -->
+            <div style="display:flex;justify-content:flex-end;">
+              <div style="background:var(--red);color:#fff;font-size:13px;padding:10px 16px;border-radius:12px 12px 2px 12px;max-width:75%;line-height:1.5;">
+                A hurricane is approaching. What do I need in my GoBag?
+              </div>
+            </div>
+            <!-- AI response -->
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <div style="width:28px;height:28px;background:linear-gradient(135deg,#E8252A,#E8252A);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">🤖</div>
+              <div style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--white);font-size:13px;padding:12px 16px;border-radius:2px 12px 12px 12px;max-width:80%;line-height:1.6;">
+                For a hurricane GoBag, here are your essentials:<br/><br/>
+                <span style="color:#ffb0b0;">✓</span> Water — 1 gallon per person per day (3 days)<br/>
+                <span style="color:#ffb0b0;">✓</span> Non-perishable food for 3 days<br/>
+                <span style="color:#ffb0b0;">✓</span> Medications and first aid kit<br/>
+                <span style="color:#ffb0b0;">✓</span> Copies of important documents<br/>
+                <span style="color:#ffb0b0;">✓</span> Flashlight, batteries, phone charger<br/>
+                <span style="color:#ffb0b0;">✓</span> Cash in small bills<br/><br/>
+                <span style="color:var(--muted);font-size:12px;">Want me to walk you through the full checklist step by step?</span>
+              </div>
+            </div>
+            <!-- User follow up -->
+            <div style="display:flex;justify-content:flex-end;">
+              <div style="background:var(--red);color:#fff;font-size:13px;padding:10px 16px;border-radius:12px 12px 2px 12px;max-width:75%;line-height:1.5;">
+                Yes, walk me through it.
+              </div>
+            </div>
+            <!-- Typing indicator -->
+            <div style="display:flex;gap:10px;align-items:center;">
+              <div style="width:28px;height:28px;background:linear-gradient(135deg,#E8252A,#E8252A);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">🤖</div>
+              <div style="background:rgba(255,255,255,0.05);border:1px solid var(--border);padding:12px 18px;border-radius:2px 12px 12px 12px;">
+                <span style="display:inline-flex;gap:5px;align-items:center;">
+                  <span style="width:7px;height:7px;background:#E8252A;border-radius:50%;animation:blink 1s 0s ease-in-out infinite;display:inline-block;"></span>
+                  <span style="width:7px;height:7px;background:#E8252A;border-radius:50%;animation:blink 1s 0.2s ease-in-out infinite;display:inline-block;"></span>
+                  <span style="width:7px;height:7px;background:#E8252A;border-radius:50%;animation:blink 1s 0.4s ease-in-out infinite;display:inline-block;"></span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat input -->
+          <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;">
+            <div style="flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:10px 16px;font-size:13px;color:var(--dim);">Ask anything about emergency preparedness...</div>
+            <div style="width:36px;height:36px;background:#E8252A;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;">↑</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- QUICK ACTIONS SECTION -->
+<section style="padding:96px 0;">
+  <div class="container">
+    <div class="reveal" style="text-align:center;margin-bottom:52px;">
+      <p class="sec-eye" style="justify-content:center;">Quick Actions</p>
+      <h2 class="sec-h2">Everything in<br/>One <em>Tap.</em></h2>
+      <p class="sec-desc" style="margin:0 auto;">Every critical tool available instantly from your home screen. No searching, no delays — just the information you need when you need it most.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;" class="reveal">
+      <div style="background:linear-gradient(135deg,#E8252A,#8B1A1D);border-radius:8px;padding:22px 20px;display:flex;align-items:center;gap:14px;position:relative;">
+        <span style="font-size:32px;">🤖</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px;">AI Emergency Assistant</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.75);">Get instant emergency advice</div>
+        </div>
+        <span style="position:absolute;top:12px;right:12px;background:#fff;color:#E8252A;font-size:9px;font-weight:700;padding:3px 8px;border-radius:100px;letter-spacing:0.5px;">NEW</span>
+      </div>
+      <div style="background:linear-gradient(135deg,#E8252A,#8B1A1D);border-radius:8px;padding:22px 20px;display:flex;align-items:center;gap:14px;position:relative;">
+        <span style="font-size:32px;">⚠️</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px;">Weather Alerts</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.75);">Real-time severe weather warnings</div>
+        </div>
+        <span style="position:absolute;top:12px;right:12px;background:#fff;color:#E8252A;font-size:9px;font-weight:700;padding:3px 8px;border-radius:100px;letter-spacing:0.5px;">LIVE</span>
+      </div>
+      <div style="background:linear-gradient(135deg,#0E1E35,#162848);border-radius:8px;padding:22px 20px;display:flex;align-items:center;gap:14px;position:relative;">
+        <span style="font-size:32px;">🌀</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px;">Hurricane Tracker</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.75);">Live storm tracking & forecasts</div>
+        </div>
+        <span style="position:absolute;top:12px;right:12px;background:#fff;color:#E8252A;font-size:9px;font-weight:700;padding:3px 8px;border-radius:100px;letter-spacing:0.5px;">MAP</span>
+      </div>
+      <div style="background:linear-gradient(135deg,#2a1020,#D4678A);border-radius:8px;padding:22px 20px;display:flex;align-items:center;gap:14px;">
+        <span style="font-size:32px;">⛈️</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px;">Storm Tracker</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.75);">Severe storm monitoring</div>
+        </div>
+      </div>
+      <div style="background:linear-gradient(135deg,#0E1E35,#1a3054);border-radius:8px;padding:22px 20px;display:flex;align-items:center;gap:14px;">
+        <span style="font-size:32px;">🏠</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px;">Find Shelters</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.75);">Locate nearby emergency shelters</div>
+        </div>
+      </div>
+      <div style="background:linear-gradient(135deg,#0A1628,#122040);border-radius:8px;padding:22px 20px;display:flex;align-items:center;gap:14px;">
+        <span style="font-size:32px;">🛒</span>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px;">Shop Supplies</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.75);">Emergency supplies & equipment</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="reveal">
+      <p class="sec-eye">Platform Features</p>
+      <h2 class="sec-h2">Everything Your<br/>Family <em>Needs.</em></h2>
+      <p class="sec-desc">Emergency Ready is not a single alert tool. It is a complete preparedness ecosystem built for the real world.</p>
+    </div>
+    <div class="feat-grid reveal">
+      <div class="feat-tile">
+        <span class="feat-icon">⛈️</span>
+        <div class="feat-name">Real-Time Weather Tracking</div>
+        <div class="feat-desc">Hurricane tracking, severe weather notifications, and storm updates personalized to your exact location.</div>
+      </div>
+      <div class="feat-tile">
+        <span class="feat-icon">🎒</span>
+        <div class="feat-name">GoBag Checklists</div>
+        <div class="feat-desc">Customizable emergency supply checklists for every disaster type. Know exactly what to pack and when to go.</div>
+      </div>
+      <div class="feat-tile">
+        <span class="feat-icon">📋</span>
+        <div class="feat-name">Step-by-Step Prep Guides</div>
+        <div class="feat-desc">Clear, actionable guides for hurricanes, earthquakes, floods, wildfires, tornadoes, and winter storms.</div>
+      </div>
+      <div class="feat-tile">
+        <span class="feat-icon">🏥</span>
+        <div class="feat-name">Shelter Locator</div>
+        <div class="feat-desc">Find emergency shelters, hospitals, and critical resources near you instantly — works when signal is down.</div>
+      </div>
+      <div class="feat-tile">
+        <span class="feat-icon">📄</span>
+        <div class="feat-name">Secure Document Vault</div>
+        <div class="feat-desc">Store IDs, insurance, and medical records locally on your device. Fully accessible offline — always.</div>
+      </div>
+      <div class="feat-tile">
+        <span class="feat-icon">🤖</span>
+        <div class="feat-name">AI Preparedness Assistant</div>
+        <div class="feat-desc">24/7 AI-powered guidance. Ask anything and get instant, reliable answers when it matters most.</div>
+      </div>
+      <div class="feat-tile">
+        <span class="feat-icon">🛒</span>
+        <div class="feat-name">Supplies Shopping</div>
+        <div class="feat-desc">Guided supply shopping from top retailers — aligned directly with your disaster-specific checklists.</div>
+      </div>
+      <div class="feat-tile">
+        <span class="feat-icon">👨‍👩‍👧</span>
+        <div class="feat-name">Family Planning Templates</div>
+        <div class="feat-desc">Structured evacuation and communication plans for families, seniors, and those with special needs.</div>
+      </div>
+      <div class="feat-tile">
+        <span class="feat-icon">✈️</span>
+        <div class="feat-name">Travel Checklist</div>
+        <div class="feat-desc">AI-powered safety tips and emergency resources across 50+ countries. Your safety travels with you.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DISASTERS -->
+<!-- AI ASSISTANT SECTION -->
+<section style="background:var(--navy2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:96px 0;position:relative;overflow:hidden;">
+  <!-- glow -->
+  <div style="position:absolute;top:50%;left:60%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(232,37,42,0.06) 0%,transparent 65%);pointer-events:none;"></div>
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;">
+
+      <!-- Left — Chat Preview -->
+      <div class="reveal">
+        <div style="background:var(--navy);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+          <!-- Chat header -->
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);background:var(--navy3);display:flex;align-items:center;gap:12px;">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--red),#8B1A1D);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;">🤖</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--white);">AI Assistant</div>
+              <div style="font-size:11px;color:var(--rose);">● Online · 24/7 Emergency Guidance</div>
+            </div>
+          </div>
+          <!-- Chat messages -->
+          <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+            <!-- User message -->
+            <div style="display:flex;justify-content:flex-end;">
+              <div style="background:var(--navy3);border:1px solid var(--border);border-radius:12px 12px 2px 12px;padding:12px 16px;max-width:75%;font-size:13px;color:var(--white);line-height:1.6;">What do I need in my GoBag for a hurricane?</div>
+            </div>
+            <!-- AI response -->
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <div style="width:28px;height:28px;background:linear-gradient(135deg,var(--red),#8B1A1D);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">🤖</div>
+              <div style="background:rgba(232,37,42,0.07);border:1px solid rgba(232,37,42,0.18);border-radius:2px 12px 12px 12px;padding:12px 16px;font-size:13px;color:var(--muted);line-height:1.7;">
+                <span style="color:var(--white);font-weight:600;display:block;margin-bottom:6px;">Here is your hurricane GoBag checklist:</span>
+                ✓ Water — 1 gallon per person per day (3 days)<br/>
+                ✓ Non-perishable food for 3 days<br/>
+                ✓ Medications and first aid kit<br/>
+                ✓ Copies of important documents<br/>
+                ✓ Flashlight, batteries, phone charger<br/>
+                ✓ Cash in small bills<br/><br/>
+                <span style="color:var(--rose);">Want me to build a personalized checklist for your household size?</span>
+              </div>
+            </div>
+            <!-- User follow up -->
+            <div style="display:flex;justify-content:flex-end;">
+              <div style="background:var(--navy3);border:1px solid var(--border);border-radius:12px 12px 2px 12px;padding:12px 16px;max-width:75%;font-size:13px;color:var(--white);line-height:1.6;">Yes — family of 4 with one senior</div>
+            </div>
+            <!-- AI typing -->
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <div style="width:28px;height:28px;background:linear-gradient(135deg,var(--red),#8B1A1D);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">🤖</div>
+              <div style="background:rgba(232,37,42,0.07);border:1px solid rgba(232,37,42,0.18);border-radius:2px 12px 12px 12px;padding:14px 18px;display:flex;align-items:center;gap:6px;">
+                <span style="width:7px;height:7px;background:var(--red);border-radius:50%;opacity:0.7;animation:blink 1s 0s ease-in-out infinite;display:inline-block;"></span>
+                <span style="width:7px;height:7px;background:var(--red);border-radius:50%;opacity:0.7;animation:blink 1s 0.25s ease-in-out infinite;display:inline-block;"></span>
+                <span style="width:7px;height:7px;background:var(--red);border-radius:50%;opacity:0.7;animation:blink 1s 0.5s ease-in-out infinite;display:inline-block;"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right — Copy -->
+      <div class="reveal">
+        <p class="sec-eye">AI Preparedness Assistant</p>
+        <h2 class="sec-h2">Not Just a<br/>Checklist.<br/><em>A Conversation.</em></h2>
+        <p class="sec-desc" style="margin-bottom:28px;">Every other app gives you a static list. Emergency Ready gives you a 24/7 AI advisor that asks the right questions, builds a plan specific to your family, and guides you through every step — before, during, and after a disaster.</p>
+
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:32px;">
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:var(--radius);">
+            <span style="color:var(--red);font-size:18px;">🎯</span>
+            <div>
+              <span style="font-weight:600;font-size:14px;color:var(--white);display:block;">Personalized to Your Family</span>
+              <span style="font-size:12px;color:var(--muted);">Accounts for household size, seniors, children, pets, and special needs</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:var(--radius);">
+            <span style="color:var(--red);font-size:18px;">📡</span>
+            <div>
+              <span style="font-weight:600;font-size:14px;color:var(--white);display:block;">Works Offline</span>
+              <span style="font-size:12px;color:var(--muted);">Available when cell networks are down — exactly when you need it most</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:var(--radius);">
+            <span style="color:var(--red);font-size:18px;">🌐</span>
+            <div>
+              <span style="font-weight:600;font-size:14px;color:var(--white);display:block;">All 6 Disaster Categories</span>
+              <span style="font-size:12px;color:var(--muted);">Hurricanes, floods, fires, earthquakes, gov. disruption, and travel emergencies</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(212,103,138,0.07);border:1px solid rgba(212,103,138,0.2);border-radius:var(--radius);">
+            <span style="color:var(--rose);font-size:18px;">⏰</span>
+            <div>
+              <span style="font-weight:600;font-size:14px;color:var(--white);display:block;">Available 24 Hours a Day</span>
+              <span style="font-size:12px;color:var(--muted);">Disasters do not wait for business hours — and neither does Emergency Ready</span>
+            </div>
+          </div>
+        </div>
+
+        <a href="https://apps.apple.com/us/app/emergency-ready-disaster-prep/id6758622433" target="_blank" class="hero-btn-primary" style="display:inline-flex;">🤖 Try the AI Assistant — Free</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- DISASTERS -->
+<section class="disaster-section" id="disasters">
+  <div class="container">
+    <div class="reveal" style="text-align:center;">
+      <p class="sec-eye" style="justify-content:center;">Disaster Coverage</p>
+      <h2 class="sec-h2">Prepared for<br/><em>Whatever</em> Comes.</h2>
+      <p class="sec-desc" style="margin:0 auto;">Six emergency categories with dedicated guides, real-time tracking, and AI support — each tailored to your location.</p>
+    </div>
+    <div class="dis-grid reveal">
+      <div class="dis-card">
+        <span class="dis-icon">⛈️</span>
+        <span class="dis-name">Severe Weather</span>
+        <span class="dis-sub">Hurricanes, tornadoes & snowstorms</span>
+      </div>
+      <div class="dis-card">
+        <span class="dis-icon">🌊</span>
+        <span class="dis-name">Flooding</span>
+        <span class="dis-sub">Flood preparation guide</span>
+      </div>
+      <div class="dis-card">
+        <span class="dis-icon">🔥</span>
+        <span class="dis-name">Fire</span>
+        <span class="dis-sub">Wildfire safety & evacuation</span>
+      </div>
+      <div class="dis-card">
+        <span class="dis-icon">📡</span>
+        <span class="dis-name">Seismic</span>
+        <span class="dis-sub">Earthquake safety & prep</span>
+      </div>
+      <div class="dis-card">
+        <span class="dis-icon">🏛️</span>
+        <span class="dis-name">Gov. Disruption</span>
+        <span class="dis-sub">Shutdown preparedness</span>
+      </div>
+      <div class="dis-card">
+        <span class="dis-icon">✈️</span>
+        <span class="dis-name">Travel Checklist</span>
+        <span class="dis-sub">50+ countries · AI tips</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GLOBAL REACH -->
+<!-- TRAVEL SECTION -->
+<section style="padding:96px 0;background:var(--navy);border-top:1px solid var(--border);border-bottom:1px solid var(--border);position:relative;overflow:hidden;">
+  <div style="position:absolute;top:0;right:-100px;width:600px;height:100%;background:radial-gradient(ellipse at right,rgba(212,103,138,0.05) 0%,transparent 65%);pointer-events:none;"></div>
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;">
+
+      <!-- Left — Copy -->
+      <div class="reveal">
+        <p class="sec-eye">Travel Checklist</p>
+        <h2 class="sec-h2">Your Safety<br/>Travels<br/><em>With You.</em></h2>
+        <p class="sec-desc" style="margin-bottom:28px;">No other emergency app has built what Emergency Ready built for travelers. AI-powered safety tips, localized emergency contacts, and preparedness guides for 50+ countries — all in your pocket before your flight lands.</p>
+        <p style="font-size:15px;color:var(--muted);line-height:1.75;margin-bottom:32px;">Whether your team is working abroad, your family is on vacation, or you are traveling alone through an unfamiliar region — Emergency Ready gives you the same level of protection overseas that you have at home.</p>
+
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px;">
+          <span style="background:rgba(212,103,138,0.08);border:1px solid rgba(212,103,138,0.2);color:var(--rose);font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;">✓ 50+ Countries</span>
+          <span style="background:rgba(212,103,138,0.08);border:1px solid rgba(212,103,138,0.2);color:var(--rose);font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;">✓ AI-Powered Local Tips</span>
+          <span style="background:rgba(212,103,138,0.08);border:1px solid rgba(212,103,138,0.2);color:var(--rose);font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;">✓ Emergency Contacts by Country</span>
+          <span style="background:rgba(212,103,138,0.08);border:1px solid rgba(212,103,138,0.2);color:var(--rose);font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;">✓ Works Offline Abroad</span>
+          <span style="background:rgba(212,103,138,0.08);border:1px solid rgba(212,103,138,0.2);color:var(--rose);font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;">✓ Pre-Trip Safety Checklist</span>
+          <span style="background:rgba(212,103,138,0.08);border:1px solid rgba(212,103,138,0.2);color:var(--rose);font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;">✓ No Competitor Has This</span>
+        </div>
+
+        <a href="https://apps.apple.com/us/app/emergency-ready-disaster-prep/id6758622433" target="_blank" class="hero-btn-primary" style="display:inline-flex;">✈️ Explore Travel Checklist</a>
+      </div>
+
+      <!-- Right — Country grid visual -->
+      <div class="reveal">
+        <div style="background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:28px;position:relative;overflow:hidden;">
+          <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--rose),var(--red));"></div>
+          <p style="font-family:'Space Mono',monospace;font-size:10px;color:var(--rose);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">// 50+ Countries Covered</p>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;">
+            <!-- Country cards -->
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇺🇸</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇬🇧</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇨🇦</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇲🇽</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇯🇲</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇧🇷</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇯🇵</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇮🇳</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇦🇺</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇫🇷</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇩🇪</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇿🇦</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇳🇬</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇰🇷</div>
+            <div style="background:var(--navy2);border:1px solid var(--border);border-radius:4px;padding:10px 8px;text-align:center;font-size:22px;">🇵🇭</div>
+            <div style="background:rgba(232,37,42,0.08);border:1px solid rgba(232,37,42,0.2);border-radius:4px;padding:10px 8px;text-align:center;font-size:13px;font-weight:600;color:var(--red);display:flex;align-items:center;justify-content:center;">+35<br/>more</div>
+          </div>
+          <div style="background:rgba(232,37,42,0.07);border:1px solid rgba(232,37,42,0.18);border-left:3px solid var(--red);border-radius:2px;padding:14px 16px;">
+            <p style="font-size:13px;color:var(--white);font-weight:600;margin-bottom:4px;">What You Get for Every Country</p>
+            <p style="font-size:12px;color:var(--muted);line-height:1.65;">Local emergency numbers · Hospital locations · Natural disaster risk by region · AI safety tips · Pre-trip preparation checklist · Offline access — no roaming required</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- GLOBAL REACH -->
+<section id="global">
+  <div class="container">
+    <div class="reveal">
+      <p class="sec-eye">Global Coverage</p>
+      <h2 class="sec-h2">Built for the<br/><em>World.</em></h2>
+      <p class="sec-desc">Wherever life takes you — Emergency Ready goes with you. Localized resources and emergency contacts in 80+ countries.</p>
+    </div>
+    <div class="reach-strip reveal">
+      <div class="reach-cell">
+        <span class="reach-num">80<em>+</em></span>
+        <span class="reach-label">Countries<br/>Covered</span>
+      </div>
+      <div class="reach-cell">
+        <span class="reach-num">6</span>
+        <span class="reach-label">Disaster<br/>Categories</span>
+      </div>
+      <div class="reach-cell">
+        <span class="reach-num">24<em>/7</em></span>
+        <span class="reach-label">AI Assistant<br/>Availability</span>
+      </div>
+      <div class="reach-cell">
+        <span class="reach-num">100<em>%</em></span>
+        <span class="reach-label">Offline<br/>Document Access</span>
+      </div>
+      <div class="reach-cell">
+        <span class="reach-num"><em>$</em>0</span>
+        <span class="reach-label">Cost to<br/>Get Started</span>
+      </div>
+    </div>
+    <div class="flag-row reveal">
+      🇺🇸 🇬🇧 🇨🇦 🇦🇺 🇯🇵 🇫🇷 🇩🇪 🇮🇹 🇪🇸 🇧🇷 🇲🇽 🇮🇳 🇰🇷 🇵🇭 🇿🇦 🇳🇬 🇯🇲 🇧🇸 🇹🇹 🇧🇧 🇳🇿 🇮🇪 🇳🇱 🇧🇪 🇨🇭 🇦🇹 🇸🇪 🇳🇴 🇩🇰 🇫🇮 🇵🇱 🇵🇹 🇬🇷 🇨🇿 🇷🇴 🇭🇺 🇭🇷 🇮🇸
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<!-- WHAT MAKES US DIFFERENT SECTION -->
+<section style="padding:96px 0;background:var(--navy);position:relative;overflow:hidden;">
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(232,37,42,0.05) 0%,transparent 65%);pointer-events:none;"></div>
+  <div class="container">
+
+    <div class="reveal" style="text-align:center;margin-bottom:60px;">
+      <p class="sec-eye" style="justify-content:center;">Exclusively Emergency Ready</p>
+      <h2 class="sec-h2">No Other App<br/>Does All of<br/><em>This.</em></h2>
+      <p class="sec-desc" style="margin:0 auto;">Most emergency apps do one thing well. Emergency Ready does everything — in one place, on one device, for every scenario your family could face.</p>
+    </div>
+
+    <!-- 6 exclusive features — 3 col grid -->
+    <div class="reveal" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:32px;">
+
+      <div style="background:var(--navy2);padding:36px 30px;position:relative;overflow:hidden;transition:background 0.25s;" onmouseover="this.style.background='rgba(232,37,42,0.05)'" onmouseout="this.style.background='var(--navy2)'">
+        <div style="position:absolute;top:0;left:0;width:0;height:2px;background:var(--red);transition:width 0.35s;"></div>
+        <span style="display:block;font-size:36px;margin-bottom:16px;">🤖</span>
+        <div style="display:inline-block;font-family:'Space Mono',monospace;font-size:9px;background:rgba(232,37,42,0.12);color:var(--red);border:1px solid rgba(232,37,42,0.25);padding:3px 10px;border-radius:2px;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">Only Emergency Ready</div>
+        <h3 style="font-weight:600;font-size:17px;color:var(--white);margin-bottom:10px;">AI Preparedness Assistant</h3>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">A 24/7 AI advisor that builds a personalized plan for your household, guides you through checklists in real time, and answers any emergency question — before, during, and after a disaster.</p>
+      </div>
+
+      <div style="background:var(--navy2);padding:36px 30px;position:relative;overflow:hidden;transition:background 0.25s;" onmouseover="this.style.background='rgba(232,37,42,0.05)'" onmouseout="this.style.background='var(--navy2)'">
+        <span style="display:block;font-size:36px;margin-bottom:16px;">✈️</span>
+        <div style="display:inline-block;font-family:'Space Mono',monospace;font-size:9px;background:rgba(232,37,42,0.12);color:var(--red);border:1px solid rgba(232,37,42,0.25);padding:3px 10px;border-radius:2px;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">Only Emergency Ready</div>
+        <h3 style="font-weight:600;font-size:17px;color:var(--white);margin-bottom:10px;">Travel Checklist · 50+ Countries</h3>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">AI-powered safety tips, local emergency contacts, and country-specific preparedness guides for 50+ countries. Your safety travels with you — no roaming required, fully offline.</p>
+      </div>
+
+      <div style="background:var(--navy2);padding:36px 30px;position:relative;overflow:hidden;transition:background 0.25s;" onmouseover="this.style.background='rgba(212,103,138,0.05)'" onmouseout="this.style.background='var(--navy2)'">
+        <span style="display:block;font-size:36px;margin-bottom:16px;">🏛️</span>
+        <div style="display:inline-block;font-family:'Space Mono',monospace;font-size:9px;background:rgba(212,103,138,0.12);color:var(--rose);border:1px solid rgba(212,103,138,0.25);padding:3px 10px;border-radius:2px;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">Only Emergency Ready</div>
+        <h3 style="font-weight:600;font-size:17px;color:var(--white);margin-bottom:10px;">Gov. Disruption Preparedness</h3>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Financial contingency planning, supply management guidance, and continuity resources for government shutdowns — a category no other emergency app has built.</p>
+      </div>
+
+      <div style="background:var(--navy2);padding:36px 30px;position:relative;overflow:hidden;transition:background 0.25s;" onmouseover="this.style.background='rgba(212,103,138,0.05)'" onmouseout="this.style.background='var(--navy2)'">
+        <span style="display:block;font-size:36px;margin-bottom:16px;">📄</span>
+        <div style="display:inline-block;font-family:'Space Mono',monospace;font-size:9px;background:rgba(212,103,138,0.12);color:var(--rose);border:1px solid rgba(212,103,138,0.25);padding:3px 10px;border-radius:2px;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">Only Emergency Ready</div>
+        <h3 style="font-weight:600;font-size:17px;color:var(--white);margin-bottom:10px;">Secure Document Vault</h3>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Store your IDs, insurance documents, and medical records directly on your device. Encrypted, private, and fully accessible offline — even when every network is down.</p>
+      </div>
+
+      <div style="background:var(--navy2);padding:36px 30px;position:relative;overflow:hidden;transition:background 0.25s;" onmouseover="this.style.background='rgba(232,37,42,0.05)'" onmouseout="this.style.background='var(--navy2)'">
+        <span style="display:block;font-size:36px;margin-bottom:16px;">🛒</span>
+        <div style="display:inline-block;font-family:'Space Mono',monospace;font-size:9px;background:rgba(232,37,42,0.12);color:var(--red);border:1px solid rgba(232,37,42,0.25);padding:3px 10px;border-radius:2px;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">Only Emergency Ready</div>
+        <h3 style="font-weight:600;font-size:17px;color:var(--white);margin-bottom:10px;">Supplies Shopping Integration</h3>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Shop for recommended emergency supplies directly through the app — guided by your personalized disaster checklist so you buy exactly what your household needs and nothing you do not.</p>
+      </div>
+
+      <div style="background:var(--navy2);padding:36px 30px;position:relative;overflow:hidden;transition:background 0.25s;" onmouseover="this.style.background='rgba(232,37,42,0.05)'" onmouseout="this.style.background='var(--navy2)'">
+        <span style="display:block;font-size:36px;margin-bottom:16px;">🌐</span>
+        <div style="display:inline-block;font-family:'Space Mono',monospace;font-size:9px;background:rgba(232,37,42,0.12);color:var(--red);border:1px solid rgba(232,37,42,0.25);padding:3px 10px;border-radius:2px;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">Only Emergency Ready</div>
+        <h3 style="font-weight:600;font-size:17px;color:var(--white);margin-bottom:10px;">True Global Coverage</h3>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Localized emergency resources, contacts, and AI-powered safety guidance across 50+ countries. Built for families, travelers, and organizations that operate beyond US borders.</p>
+      </div>
+
+    </div>
+
+    <!-- Bottom callout -->
+    <div class="reveal" style="background:linear-gradient(135deg,rgba(232,37,42,0.08) 0%,rgba(212,103,138,0.05) 100%);border:1px solid rgba(232,37,42,0.2);border-radius:4px;padding:36px 40px;display:flex;align-items:center;gap:32px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:280px;">
+        <p style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--white);line-height:1;margin-bottom:10px;">Six Features. <span style="color:var(--red);">Zero Alternatives.</span></p>
+        <p style="font-size:15px;color:var(--muted);line-height:1.75;">Every feature above is exclusive to Emergency Ready. You would need four to six separate apps — and several paid subscriptions — to match what Emergency Ready delivers in one place, free to start.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;flex-shrink:0;">
+        <a href="https://apps.apple.com/us/app/emergency-ready-disaster-prep/id6758622433" target="_blank" style="display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;font-weight:600;font-size:14px;padding:13px 24px;border-radius:var(--radius);text-decoration:none;">🍎 Download — App Store</a>
+        <a href="https://play.google.com/store/apps/details?id=space.manus.emergency.ready.t20251229182701" target="_blank" style="display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--white);font-weight:600;font-size:14px;padding:13px 24px;border-radius:var(--radius);text-decoration:none;">▶ Download — Google Play</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div class="container" style="text-align:center;">
+    <div class="reveal">
+      <p class="sec-eye" style="justify-content:center;">Simple Pricing</p>
+      <h2 class="sec-h2">One App.<br/><em>Two Plans.</em></h2>
+      <p class="sec-desc" style="margin:0 auto;">Full protection for your family for less than a cup of coffee per month. Cancel anytime.</p>
+    </div>
+    <div class="price-cards reveal" style="max-width:780px;">
+
+      <!-- MONTHLY -->
+      <div class="price-card">
+        <span class="price-tag" style="display:inline-block;background:rgba(255,255,255,0.07);color:var(--white);padding:5px 18px;border-radius:100px;margin-bottom:20px;">MONTHLY</span>
+        <span class="price-amount">$5<span style="font-size:32px;">.99</span></span>
+        <span class="price-period">per month · cancel anytime</span>
+        <ul class="price-features">
+          <li>Real-time weather alerts</li>
+          <li>Live hurricane &amp; storm tracking</li>
+          <li>Emergency shelter finder</li>
+          <li>Document storage &amp; backup</li>
+          <li>Family emergency contacts</li>
+          <li>Public safety registries · 80+ countries</li>
+          <li>AI Emergency Assistant</li>
+          <li>Cancel anytime</li>
+        </ul>
+        <a href="https://buy.stripe.com/14AcMZgmO9RI7Ln6YC2Fa00" target="_blank" class="price-cta price-cta-outline">Subscribe Now →</a>
+        <p style="font-size:11px;color:var(--dim);margin-top:12px;line-height:1.5;">Subscribe and use the same email you use to log into the app</p>
+      </div>
+
+      <!-- YEARLY -->
+      <div class="price-card featured" style="position:relative;">
+        <div style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:5px 18px;border-radius:100px;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;">Best Value</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:20px;">
+          <span class="price-tag" style="display:inline-block;background:var(--red);color:#fff;padding:5px 18px;border-radius:100px;margin-bottom:0;">YEARLY</span>
+          <span style="background:rgba(212,103,138,0.15);border:1px solid rgba(212,103,138,0.3);color:var(--rose);font-size:11px;font-weight:600;padding:4px 12px;border-radius:100px;">Save 17%</span>
+        </div>
+        <span class="price-amount">$59<span style="font-size:32px;">.99</span></span>
+        <span class="price-period">per year · just $5.00/month billed annually</span>
+        <p style="font-size:13px;color:var(--rose);margin-bottom:20px;">Save $11.89 per year</p>
+        <ul class="price-features">
+          <li>Everything in Monthly, plus:</li>
+          <li>Save $11.89 per year</li>
+          <li>All premium features included</li>
+          <li>Priority support</li>
+          <li>AI Emergency Assistant</li>
+          <li>Public safety registries · 80+ countries</li>
+          <li>Cancel anytime</li>
+        </ul>
+        <a href="https://buy.stripe.com/bJe8wJb2ufc2d5H3Mq2Fa01" target="_blank" class="price-cta price-cta-solid">Subscribe Now →</a>
+        <p style="font-size:11px;color:var(--dim);margin-top:12px;line-height:1.5;">Subscribe and use the same email you use to log into the app</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section class="download-section">
+  <div class="container reveal">
+    <h2 class="download-h">
+      YOUR FAMILY<br/>
+      DESERVES TO<br/>
+      BE <em>READY.</em>
+    </h2>
+    <p class="download-sub">Download Emergency Ready today — completely free. Because preparedness is not a luxury. It is a responsibility.</p>
+    <div class="dl-buttons">
+      <a href="https://apps.apple.com/us/app/emergency-ready-disaster-prep/id6758622433" target="_blank" class="dl-btn dl-btn-ios">
+        <span class="dl-icon">🍎</span>
+        <div>
+          <span class="dl-sub">Download on the</span>
+          <span class="dl-name">App Store</span>
+        </div>
       </a>
-      <div class="nav-links">
-        <a href="#features">Features</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#privacy">Privacy</a>
-        <a href="#contact">Contact</a>
-        <a href="#download" class="nav-cta">Download App</a>
-      </div>
-      <button class="mobile-menu-btn">☰</button>
+      <a href="https://play.google.com/store/apps/details?id=space.manus.emergency.ready.t20251229182701" target="_blank" class="dl-btn dl-btn-android">
+        <span class="dl-icon">▶</span>
+        <div>
+          <span class="dl-sub">Get it on</span>
+          <span class="dl-name">Google Play</span>
+        </div>
+      </a>
     </div>
-  </nav>
+  </div>
+</section>
 
-  <!-- Hero Section -->
-  <section class="hero" id="home">
-    <div class="hero-container">
-      <div class="hero-content">
-        <h1>Be Ready for <span>Anything</span>, Anywhere</h1>
-        <p>Your personal emergency preparedness companion. Real-time weather alerts, hurricane tracking, and emergency resources for 80+ countries worldwide.</p>
-        <div class="hero-buttons">
-          <a href="#download" class="btn-primary">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 2H6.477C5.768 2 5.5 2.768 5.5 3.477v17.046c0 .709.768.977 1.477.977h11.046c.709 0 .977-.768.977-1.477V3.477C19 2.768 18.232 2 17.523 2zM12 20.5c-.69 0-1.25-.56-1.25-1.25s.56-1.25 1.25-1.25 1.25.56 1.25 1.25-.56 1.25-1.25 1.25zM17 17H7V4h10v13z"/></svg>
-            Get the App
-          </a>
-          <a href="#features" class="btn-secondary">
-            Learn More
-          </a>
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand-col">
+        <div class="foot-logo">
+          <div class="bolt" style="width:20px;height:20px;"></div>
+          <span style="font-weight:700;font-size:15px;">Emergency Ready</span>
         </div>
-        <div class="hero-stats">
-          <div class="stat">
-            <div class="stat-number">80+</div>
-            <div class="stat-label">Countries</div>
-          </div>
-          <div class="stat">
-            <div class="stat-number">6</div>
-            <div class="stat-label">Disaster Types</div>
-          </div>
-          <div class="stat">
-            <div class="stat-number">24/7</div>
-            <div class="stat-label">Live Alerts</div>
-          </div>
-        </div>
+        <p class="foot-desc">Your personal emergency preparedness companion. Be ready for anything, anywhere in the world. A product by StratosX Tech.</p>
       </div>
-      <div class="hero-image">
-        <div class="phone-mockup">
-          <div class="phone-screen">
-            <div class="phone-header">
-              <h3>🛡️ Emergency Ready</h3>
-              <p>Your Safety Companion</p>
-            </div>
-            <div class="phone-content">
-              <div class="mini-card">
-                <div class="mini-card-icon" style="background: #fecaca;">🌀</div>
-                <div class="mini-card-text">
-                  <h4>Hurricane Tracker</h4>
-                  <p>Live storm tracking</p>
-                </div>
-              </div>
-              <div class="mini-card">
-                <div class="mini-card-icon" style="background: #fed7aa;">⚠️</div>
-                <div class="mini-card-text">
-                  <h4>Weather Alerts</h4>
-                  <p>Real-time NWS warnings</p>
-                </div>
-              </div>
-              <div class="mini-card">
-                <div class="mini-card-icon" style="background: #d1fae5;">📍</div>
-                <div class="mini-card-text">
-                  <h4>Find Shelters</h4>
-                  <p>Nearby emergency shelters</p>
-                </div>
-              </div>
-              <div class="mini-card">
-                <div class="mini-card-icon" style="background: #ddd6fe;">👨‍👩‍👧‍👦</div>
-                <div class="mini-card-text">
-                  <h4>Emergency Contacts</h4>
-                  <p>Family safety plan</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div>
+        <div class="foot-col-title">Product</div>
+        <ul class="foot-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#disasters">Coverage</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#global">Countries</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="foot-col-title">Download</div>
+        <ul class="foot-links">
+          <li><a href="https://apps.apple.com/us/app/emergency-ready-disaster-prep/id6758622433" target="_blank">Apple App Store</a></li>
+          <li><a href="https://play.google.com/store/apps/details?id=space.manus.emergency.ready.t20251229182701" target="_blank">Google Play</a></li>
+          <li><a href="https://www.emergency-global.com" target="_blank">Website</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="foot-col-title">Legal</div>
+        <ul class="foot-links">
+          <li><a href="https://www.emergency-global.com/privacy.html" target="_blank">Privacy Policy</a></li>
+          <li><a href="https://www.emergency-global.com/terms.html" target="_blank">Terms of Service</a></li>
+          <li><a href="https://www.emergency-global.com/delete-data.html" target="_blank">Delete Data</a></li>
+          <li><a href="mailto:stratosxtech@gmail.com">Contact</a></li>
+        </ul>
       </div>
     </div>
-  </section>
-
-  <!-- Features Section -->
-  <section class="features" id="features">
-    <div class="section-container">
-      <div class="section-header">
-        <h2>Everything You Need to Stay Safe</h2>
-        <p>Comprehensive emergency preparedness tools designed to keep you and your family protected during any disaster.</p>
-      </div>
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon" style="background: #fecaca;">🌀</div>
-          <h3>Hurricane Tracker</h3>
-          <p>Live Caribbean storm tracking with real-time updates from the National Hurricane Center. Track active storms and plan your evacuation.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon" style="background: #fed7aa;">⚠️</div>
-          <h3>Weather Alerts</h3>
-          <p>Real-time alerts from official meteorological agencies including NWS, JMA, BOM, and Environment Canada.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon" style="background: #d1fae5;">📍</div>
-          <h3>Shelter Finder</h3>
-          <p>Locate nearby emergency shelters, Red Cross locations, and evacuation centers in your area.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon" style="background: #ddd6fe;">👨‍👩‍👧‍👦</div>
-          <h3>Emergency Contacts</h3>
-          <p>Store and share your family emergency plan. Quick access to local emergency numbers worldwide.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon" style="background: #fef3c7;">📄</div>
-          <h3>Document Storage</h3>
-          <p>Securely store photos of important documents like IDs, insurance cards, and medical records locally on your device.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon" style="background: #fce7f3;">🛡️</div>
-          <h3>Public Safety</h3>
-          <p>Access sex offender registries, criminal databases, and missing persons resources for 80+ countries.</p>
-        </div>
-      </div>
+    <div class="foot-bottom">
+      <span class="foot-copy">© 2026 StratosX Technologies · All Rights Reserved · emergency-global.com</span>
+      <span class="foot-copy">Made for your safety 🛡️</span>
     </div>
-  </section>
+  </div>
+</footer>
 
-  <!-- Pricing Section -->
-  <section class="pricing" id="pricing">
-    <div class="section-container">
-      <div class="section-header">
-        <h2>Simple, Affordable Pricing</h2>
-        <p>Get full access to all emergency preparedness features for less than a cup of coffee per month.</p>
-      </div>
-      <div class="pricing-cards">
-        <div class="pricing-card">
-          <div class="pricing-badge">MONTHLY</div>
-          <div class="pricing-price">
-            <span class="amount">$5.99</span>
-            <span class="period">/month</span>
-          </div>
-          <div class="pricing-features">
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>Real-time weather alerts</span>
-            </div>
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>Live hurricane & storm tracking</span>
-            </div>
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>Emergency shelter finder</span>
-            </div>
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>Document storage & backup</span>
-            </div>
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>Family emergency contacts</span>
-            </div>
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>Public safety registries (80+ countries)</span>
-            </div>
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>AI Emergency Assistant</span>
-            </div>
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>Cancel anytime</span>
-            </div>
-          </div>
-          <a href="https://buy.stripe.com/14AcMZgmO9RI7Ln6YC2Fa00" class="pricing-cta" target="_blank" rel="noopener">Subscribe Now and Use the same email you'll use to log into the app</a>
-        </div>
-        <div class="pricing-card popular">
-          <div class="popular-tag">BEST VALUE</div>
-          <div class="pricing-badge">YEARLY</div>
-          <div class="pricing-save">Save 17%</div>
-          <div class="pricing-price">
-            <span class="amount">$59.99</span>
-            <span class="period">/year</span>
-          </div>
-          <div style="color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem;">Just $5.00/month — billed annually</div>
-          <div class="pricing-features">
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>Everything in Monthly, plus:</span>
-            </div>
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>Save $11.89 per year</span>
-            </div>
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>All premium features included</span>
-            </div>
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>Priority support</span>
-            </div>
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>AI Emergency Assistant</span>
-            </div>
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>Public safety registries (80+ countries)</span>
-            </div>
-            <div class="pricing-feature">
-              <span class="check">✓</span>
-              <span>Cancel anytime</span>
-            </div>
-          </div>
-          <a href="https://buy.stripe.com/bJe8wJb2ufc2d5H3Mq2Fa01" class="pricing-cta" style="background: linear-gradient(135deg, var(--accent) 0%, #8b5cf6 100%);" target="_blank" rel="noopener">Subscribe Now and Use the same email you'll use to log into the app</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Countries Section -->
-  <section class="countries" id="countries">
-    <div class="section-container">
-      <div class="section-header">
-        <h2>Available in 80+ Countries</h2>
-        <p>Emergency Ready provides localized emergency resources, weather alerts, and safety information worldwide.</p>
-      </div>
-      <div class="countries-grid">
-        <span class="country-flag">🇺🇸</span>
-        <span class="country-flag">🇬🇧</span>
-        <span class="country-flag">🇨🇦</span>
-        <span class="country-flag">🇦🇺</span>
-        <span class="country-flag">🇯🇵</span>
-        <span class="country-flag">🇫🇷</span>
-        <span class="country-flag">🇩🇪</span>
-        <span class="country-flag">🇮🇹</span>
-        <span class="country-flag">🇪🇸</span>
-        <span class="country-flag">🇧🇷</span>
-        <span class="country-flag">🇲🇽</span>
-        <span class="country-flag">🇮🇳</span>
-        <span class="country-flag">🇰🇷</span>
-        <span class="country-flag">🇵🇭</span>
-        <span class="country-flag">🇿🇦</span>
-        <span class="country-flag">🇳🇬</span>
-        <span class="country-flag">🇯🇲</span>
-        <span class="country-flag">🇧🇸</span>
-        <span class="country-flag">🇹🇹</span>
-        <span class="country-flag">🇧🇧</span>
-        <span class="country-flag">🇳🇿</span>
-        <span class="country-flag">🇮🇪</span>
-        <span class="country-flag">🇳🇱</span>
-        <span class="country-flag">🇧🇪</span>
-        <span class="country-flag">🇨🇭</span>
-        <span class="country-flag">🇦🇹</span>
-        <span class="country-flag">🇸🇪</span>
-        <span class="country-flag">🇳🇴</span>
-        <span class="country-flag">🇩🇰</span>
-        <span class="country-flag">🇫🇮</span>
-        <span class="country-flag">🇵🇱</span>
-        <span class="country-flag">🇵🇹</span>
-        <span class="country-flag">🇬🇷</span>
-        <span class="country-flag">🇨🇿</span>
-        <span class="country-flag">🇷🇴</span>
-        <span class="country-flag">🇭🇺</span>
-        <span class="country-flag">🇭🇷</span>
-        <span class="country-flag">🇮🇸</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Download Section -->
-  <section class="download" id="download">
-    <div class="section-container">
-      <div class="section-header">
-        <h2>Download Emergency Ready</h2>
-        <p>Scan the QR code with your phone's camera to download the app, or click the button below.</p>
-      </div>
-      <div class="download-grid">
-        <div class="download-card">
-          <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663031454000/ZdamAqDsuWnlSFtE.png" alt="Emergency Ready Google Play QR Code" class="qr-code">
-          <h3>Google Play Store</h3>
-          <p>Available now on Android</p>
-          <a href="https://play.google.com/store/apps/details?id=space.manus.emergency.ready.t20250516195498" class="store-btn store-btn-google" target="_blank" rel="noopener">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/></svg>
-            Get it on Google Play
-          </a>
-        </div>
-        <div class="download-card">
-          <img src="https://files.manuscdn.com/user_upload_by_module/session_file/310419663031454000/kHfLXpjyHLMgDNGT.png" alt="Emergency Ready Apple App Store QR Code" class="qr-code">
-          <h3>Apple App Store</h3>
-          <p>Available now on iOS</p>
-          <a href="https://apps.apple.com/us/app/emergency-ready-disaster-prep/id6758622433" class="store-btn store-btn-apple" target="_blank" rel="noopener">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-            Download on App Store
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Privacy Policy Section -->
-  <section class="legal-section" id="privacy">
-    <div class="legal-content">
-      <h2>Privacy Policy</h2>
-      <p><em>Last Updated: January 2, 2026</em></p>
-      
-      <p>StratosX Tech ("we," "us," or "our") is committed to protecting your privacy. Our Privacy Policy explains how we collect, use, and safeguard your information when you use the Emergency Ready app.</p>
-      
-      <h3>Key Points:</h3>
-      <ul>
-        <li><strong>We do NOT sell your data</strong> - Your personal information is never sold to third parties</li>
-        <li><strong>Local storage</strong> - Documents, photos, and contacts are stored on YOUR device only</li>
-        <li><strong>Secure payments</strong> - Processed by Stripe (PCI DSS Level 1 certified)</li>
-        <li><strong>Your rights</strong> - Access, correct, or delete your data at any time</li>
-        <li><strong>GDPR & CCPA compliant</strong> - We respect international privacy regulations</li>
-      </ul>
-      
-      <div style="margin-top: 2rem; text-align: center;">
-        <a href="privacy.html" style="display: inline-block; background: var(--primary); color: white; padding: 1rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 600;">Read Full Privacy Policy →</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Terms of Service Section -->
-  <section class="legal-section" id="terms" style="background: var(--surface);">
-    <div class="legal-content">
-      <h2>Terms of Service</h2>
-      <p><em>Last Updated: January 2, 2026</em></p>
-      
-      <p>By using Emergency Ready, you agree to our Terms of Service. These terms govern your use of the app and outline important information about subscriptions, disclaimers, and your responsibilities.</p>
-      
-      <h3>Key Points:</h3>
-      <ul>
-        <li><strong>Not an emergency service</strong> - Always call 911/999/112 in emergencies</li>
-        <li><strong>Subscription: $5.99/month or $59.99/year</strong> - Cancel anytime, no partial refunds</li>
-        <li><strong>Information disclaimer</strong> - Verify emergency info with official sources</li>
-        <li><strong>Age requirement</strong> - Must be 13+ (16+ in EEA)</li>
-        <li><strong>Your responsibility</strong> - Maintain backups and follow official guidance</li>
-      </ul>
-      
-      <div style="margin-top: 2rem; text-align: center;">
-        <a href="terms.html" style="display: inline-block; background: var(--primary); color: white; padding: 1rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 600;">Read Full Terms of Service →</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Data Deletion Section -->
-  <section class="legal-section" id="delete-data">
-    <div class="legal-content">
-      <h2>Request Data Deletion</h2>
-      <p><em>Your Right to Be Forgotten</em></p>
-      
-      <p>Under GDPR, CCPA, and other privacy regulations, you have the right to request deletion of your personal data. We process all deletion requests within 30 days.</p>
-      
-      <h3>Quick Summary:</h3>
-      <ul>
-        <li><strong>What we delete:</strong> Account info, subscription records, usage data</li>
-        <li><strong>Your responsibility:</strong> Local data (documents, photos) - uninstall app to remove</li>
-        <li><strong>Timeline:</strong> Completed within 30 days of verification</li>
-        <li><strong>How to request:</strong> Email stratosxtech@gmail.com</li>
-      </ul>
-      
-      <div style="margin-top: 2rem; text-align: center;">
-        <a href="delete-data.html" style="display: inline-block; background: var(--primary); color: white; padding: 1rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 600; margin-right: 1rem;">Learn More About Data Deletion →</a>
-        <a href="mailto:stratosxtech@gmail.com?subject=Data%20Deletion%20Request" style="display: inline-block; background: #dc2626; color: white; padding: 1rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 600;">📧 Request Data Deletion</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer id="contact">
-    <div class="footer-container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <h3>🛡️ Emergency Ready</h3>
-          <p>Your personal emergency preparedness companion. Be ready for anything, anywhere in the world.</p>
-          <p>A product by <strong>StratosX Tech</strong></p>
-        </div>
-        <div class="footer-column">
-          <h4>Product</h4>
-          <a href="#features">Features</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#countries">Countries</a>
-          <a href="#download">Download</a>
-        </div>
-        <div class="footer-column">
-          <h4>Legal</h4>
-          <a href="privacy.html">Privacy Policy</a>
-          <a href="terms.html">Terms of Service</a>
-          <a href="delete-data.html">Delete Data</a>
-        </div>
-        <div class="footer-column">
-          <h4>Contact</h4>
-          <a href="mailto:stratosxtech@gmail.com">stratosxtech@gmail.com</a>
-          <a href="https://emergency-global.com">emergency-global.com</a>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>© 2026 StratosX Tech. All rights reserved.</p>
-        <p>Made with ❤️ for your safety</p>
-      </div>
-    </div>
-  </footer>
-
-  <script>
-    // Smooth scroll for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-          target.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      });
-    });
-    
-    // Mobile menu toggle (basic implementation)
-    const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-    const navLinks = document.querySelector('.nav-links');
-    
-    if (mobileMenuBtn) {
-      mobileMenuBtn.addEventListener('click', () => {
-        navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
-        navLinks.style.flexDirection = 'column';
-        navLinks.style.position = 'absolute';
-        navLinks.style.top = '100%';
-        navLinks.style.left = '0';
-        navLinks.style.right = '0';
-        navLinks.style.background = 'white';
-        navLinks.style.padding = '1rem';
-        navLinks.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
-      });
+<script>
+// Scroll reveal
+const reveals = document.querySelectorAll('.reveal');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), i * 80);
+      obs.unobserve(e.target);
     }
-  </script>
+  });
+}, { threshold: 0.08 });
+reveals.forEach(el => obs.observe(el));
+
+// Smooth nav active state
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(section => {
+    if (window.scrollY >= section.offsetTop - 100) current = section.getAttribute('id');
+  });
+  navLinks.forEach(link => {
+    link.style.color = link.getAttribute('href') === '#' + current ? 'var(--white)' : '';
+  });
+});
+</script>
+
+<!-- Google Analytics — replace UA-XXXXXXXX with your tracking ID -->
+<!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script> -->
+
 </body>
 </html>
