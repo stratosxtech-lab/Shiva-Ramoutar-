@@ -1,0 +1,422 @@
+<title>Hide &amp; Seek Preview</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: "dusk in the park" — a live phone prototype beside its screen notes, then the commercial case below. Deliberately single-theme (twilight). */
+:root{
+  --dusk:#121C26;       /* page ground */
+  --dusk-2:#1A2733;     /* raised surfaces */
+  --dusk-3:#243543;     /* lines, inputs */
+  --mist:#E8EEF0;       /* primary text */
+  --fog:#9DB0BA;        /* secondary text */
+  --lantern:#F4B740;    /* accent: hiders / primary action */
+  --ember:#FF7B5C;      /* seeker / heat */
+  --moss:#5FBF8E;       /* positive */
+  --grass:#1E3A2E; --grass-2:#25483A; --path:#34495A; --pond:#1F4660;
+  --display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body:"Figtree", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme:dark;
+}
+html,body{background:var(--dusk);color:var(--mist)}
+body{font-family:var(--body);font-size:15px;line-height:1.55;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1120px;margin:0 auto;padding-block:40px 72px;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(34px,6vw,60px);font-weight:800;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--lantern)}
+h2{font-size:clamp(24px,3.4vw,34px);font-weight:700}
+h3{font-size:18px;font-weight:700}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--lantern)}
+.lede{max-width:62ch;color:var(--fog);font-size:17px}
+header{display:flex;flex-direction:column;gap:14px}
+
+/* ---------- Prototype area ---------- */
+.proto{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:48px;align-items:start}
+@media (max-width:860px){.proto{grid-template-columns:minmax(0,1fr)}}
+.phone{width:100%;max-width:380px;margin:0 auto;aspect-ratio:380/780;border-radius:46px;background:#0A1118;padding:12px;box-shadow:0 0 0 1px var(--dusk-3),0 30px 80px -20px rgba(0,0,0,.7)}
+.screen-host{position:relative;width:100%;height:100%;border-radius:36px;overflow:hidden;background:var(--dusk)}
+.status{position:absolute;inset:0 0 auto;height:40px;display:flex;justify-content:space-between;align-items:center;padding:0 26px;font:600 12px var(--body);z-index:5;color:var(--mist)}
+.notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:96px;height:26px;border-radius:20px;background:#0A1118;z-index:6}
+.screen{position:absolute;inset:0;padding:48px 18px 18px;display:flex;flex-direction:column;gap:14px;overflow-y:auto;scrollbar-width:none}
+.screen::-webkit-scrollbar{display:none}
+.screen[hidden]{display:none!important}
+
+.wordmark{font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:-.02em;line-height:1}
+.wordmark span{color:var(--lantern)}
+.muted{color:var(--fog);font-size:13px}
+.card{background:var(--dusk-2);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.btn{appearance:none;border:0;border-radius:14px;padding:13px 16px;font:700 15px var(--body);cursor:pointer;background:var(--lantern);color:#2A1C00;text-align:center}
+.btn.ghost{background:var(--dusk-3);color:var(--mist)}
+.btn.ember{background:var(--ember);color:#2B0B03}
+.btn:focus-visible,.step:focus-visible,.seg button:focus-visible,input:focus-visible{outline:2px solid var(--lantern);outline-offset:2px}
+.row{display:flex;gap:10px;align-items:center}
+.row.between{justify-content:space-between}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12px;font-weight:600;padding:5px 10px;border-radius:999px;background:var(--dusk-3);color:var(--mist)}
+.chip.on{background:var(--lantern);color:#2A1C00}
+input.code{width:100%;background:var(--dusk);border:1px solid var(--dusk-3);border-radius:12px;padding:11px 12px;color:var(--mist);font:700 15px var(--mono);letter-spacing:.08em}
+.list{display:flex;flex-direction:column}
+.list .item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--dusk-3);font-size:13px}
+.list .item:first-child{border-top:0}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:700 12px var(--body);color:#10171D;flex:none}
+.role{font:700 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:6px}
+.role.s{background:color-mix(in srgb,var(--ember) 22%,transparent);color:var(--ember)}
+.role.h{background:color-mix(in srgb,var(--lantern) 20%,transparent);color:var(--lantern)}
+.role.f{background:var(--dusk-3);color:var(--fog)}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kv div{background:var(--dusk);border-radius:12px;padding:9px 10px}
+.kv b{display:block;font:700 15px var(--mono);font-variant-numeric:tabular-nums}
+.kv small{color:var(--fog);font-size:11px}
+
+/* live map */
+.map-wrap{position:relative;border-radius:20px;overflow:hidden;flex:none}
+.map-wrap svg{display:block;width:100%;height:auto}
+.hud{position:absolute;inset:10px 10px auto;display:flex;justify-content:space-between;pointer-events:none}
+.pill{background:rgba(10,17,24,.82);border-radius:999px;padding:6px 11px;font:700 13px var(--mono);font-variant-numeric:tabular-nums;display:flex;gap:6px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ember)}
+.feed{display:flex;flex-direction:column;gap:6px}
+.clue{display:flex;gap:10px;align-items:flex-start;font-size:13px;background:var(--dusk-2);border-radius:12px;padding:9px 11px}
+.clue time{font:600 11px var(--mono);color:var(--fog);flex:none;padding-top:2px}
+.seg{display:flex;background:var(--dusk-2);border-radius:12px;padding:3px}
+.seg button{flex:1;border:0;background:none;color:var(--fog);font:700 13px var(--body);padding:8px;border-radius:9px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--dusk-3);color:var(--mist)}
+.heat{height:10px;border-radius:6px;background:linear-gradient(90deg,#3A6EA5,var(--lantern),var(--ember));position:relative}
+.heat i{position:absolute;top:-4px;width:4px;height:18px;border-radius:2px;background:var(--mist);transition:left .8s}
+
+/* results */
+.podium{display:grid;grid-template-columns:repeat(3,1fr);align-items:end;gap:8px;text-align:center}
+.podium .p{display:flex;flex-direction:column;align-items:center;gap:6px}
+.podium .bar{width:100%;border-radius:12px 12px 4px 4px;background:var(--dusk-3);display:grid;place-items:center;font:800 20px var(--display)}
+.podium .p.first .bar{background:var(--lantern);color:#2A1C00}
+.score{font:700 13px var(--mono);font-variant-numeric:tabular-nums}
+
+/* teams bars */
+.bars{display:flex;align-items:flex-end;gap:6px;height:90px}
+.bars span{flex:1;background:var(--moss);border-radius:4px 4px 0 0;opacity:.85}
+.bars span.lo{background:var(--dusk-3)}
+.axis{display:flex;justify-content:space-between;font:500 10px var(--mono);color:var(--fog)}
+
+/* stepper + notes */
+.side{display:flex;flex-direction:column;gap:22px;min-width:0}
+.steps{display:flex;flex-wrap:wrap;gap:8px}
+.step{appearance:none;border:1px solid var(--dusk-3);background:none;color:var(--fog);border-radius:999px;padding:8px 14px;font:600 14px var(--body);cursor:pointer;display:flex;gap:8px;align-items:center}
+.step b{font:700 11px var(--mono);color:var(--fog)}
+.step[aria-current="step"]{background:var(--lantern);color:#2A1C00;border-color:var(--lantern)}
+.step[aria-current="step"] b{color:#2A1C00}
+.note{display:flex;flex-direction:column;gap:12px;max-width:60ch}
+.note ul{margin:0;padding-left:18px;color:var(--fog);display:flex;flex-direction:column;gap:6px}
+.note li b{color:var(--mist);font-weight:600}
+.hint{font-size:13px;color:var(--fog);border-top:1px solid var(--dusk-3);padding-top:14px}
+
+/* ---------- Commercial section ---------- */
+.section{display:flex;flex-direction:column;gap:20px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+@media (max-width:760px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--dusk-3);border-radius:16px}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+th,td{text-align:left;padding:12px 14px;border-top:1px solid var(--dusk-3);vertical-align:top}
+thead th{border-top:0;font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--fog);background:var(--dusk-2)}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--lantern);font-weight:700}
+td small{display:block;color:var(--fog)}
+.panel{background:var(--dusk-2);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:12px}
+.panel ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:7px;color:var(--fog)}
+.panel li b{color:var(--mist);font-weight:600}
+.callout{border-left:3px solid var(--lantern);padding:4px 0 4px 16px;max-width:70ch;color:var(--mist)}
+.foot{font-size:12px;color:var(--fog);max-width:80ch}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Product preview · Interactive prototype</span>
+    <h1>Hide <em>&amp;</em> Seek</h1>
+    <p class="lede">A location-based game that turns parks, campuses and offices into a live game board. Tap through the five core screens below. Every button inside the phone works, and the live hunt runs in real time.</p>
+  </header>
+
+  <section class="proto" aria-label="App prototype">
+    <div class="phone">
+      <div class="screen-host">
+        <div class="notch" aria-hidden="true"></div>
+        <div class="status" aria-hidden="true"><span>7:42</span><span>5G ▮▮▮</span></div>
+
+        <!-- 1 HOME -->
+        <div class="screen" id="s-home">
+          <div class="row between"><div class="wordmark">Hide <span>&amp;</span> Seek</div><div class="av" style="background:var(--lantern)">SR</div></div>
+          <p class="muted">Dusk is the best time to hide. 3 friends are online near Riverside Park.</p>
+          <button class="btn" data-go="lobby">Host a game</button>
+          <div class="card">
+            <label for="join-code" class="muted">Join with a game code</label>
+            <input class="code" id="join-code" value="LANTERN-42" aria-label="Game code">
+            <button class="btn ghost" data-go="lobby">Join game</button>
+          </div>
+          <div class="card">
+            <h3>Pick a mode</h3>
+            <div class="chips" id="mode-chips">
+              <span class="chip">Classic</span><span class="chip on">Infection</span><span class="chip">Shadow Teams</span><span class="chip">Decoy</span><span class="chip">Indoor</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Recent games</h3>
+            <div class="list">
+              <div class="item"><span>Riverside Park · Infection</span><span class="score">+420</span></div>
+              <div class="item"><span>Office HQ · Shadow Teams</span><span class="score">+310</span></div>
+              <div class="item"><span>Home · Indoor</span><span class="score">+180</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 LOBBY -->
+        <div class="screen" id="s-lobby" hidden>
+          <div class="row between"><h3>Game lobby</h3><span class="chip on">LANTERN-42</span></div>
+          <div class="map-wrap" aria-label="Play zone preview">
+            <svg viewBox="0 0 340 170" role="img" aria-label="Riverside Park play zone">
+              <rect width="340" height="170" fill="var(--grass)"/>
+              <path d="M0 120 C80 100 140 140 220 110 S320 90 340 100 V170 H0Z" fill="var(--pond)"/>
+              <path d="M20 20 L320 150 M40 160 L300 10" stroke="var(--path)" stroke-width="6" fill="none"/>
+              <polygon points="40,18 300,14 318,120 210,158 30,140" fill="rgba(244,183,64,.10)" stroke="var(--lantern)" stroke-width="2" stroke-dasharray="6 5"/>
+              <text x="170" y="86" text-anchor="middle" fill="var(--mist)" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700">PLAY ZONE · 0.4 km²</text>
+            </svg>
+          </div>
+          <div class="kv">
+            <div><b>Infection</b><small>Mode</small></div>
+            <div><b>15:00</b><small>Round length</small></div>
+            <div><b>0:60</b><small>Head start</small></div>
+            <div><b>6 / 12</b><small>Players</small></div>
+          </div>
+          <div class="card">
+            <div class="row between"><h3>Players</h3><span class="muted">Roles assigned at random</span></div>
+            <div class="list" id="lobby-players"></div>
+          </div>
+          <button class="btn" data-go="live">Start game</button>
+        </div>
+
+        <!-- 3 LIVE -->
+        <div class="screen" id="s-live" hidden>
+          <div class="seg" role="group" aria-label="Viewpoint">
+            <button type="button" aria-pressed="true" data-view="seeker">Seeker view</button>
+            <button type="button" aria-pressed="false" data-view="hider">Hider view</button>
+          </div>
+          <div class="map-wrap">
+            <svg viewBox="0 0 340 300" role="img" aria-label="Live map with shrinking warm zone">
+              <rect width="340" height="300" fill="var(--grass)"/>
+              <ellipse cx="70" cy="70" rx="60" ry="40" fill="var(--grass-2)"/>
+              <ellipse cx="270" cy="230" rx="70" ry="50" fill="var(--grass-2)"/>
+              <path d="M0 210 C70 190 120 250 200 220 S300 190 340 200 V300 H0Z" fill="var(--pond)"/>
+              <path d="M10 30 L330 270 M30 290 L320 20 M0 140 H340" stroke="var(--path)" stroke-width="7" fill="none" stroke-linecap="round"/>
+              <polygon points="18,14 322,12 330,260 220,292 14,280" fill="none" stroke="var(--lantern)" stroke-width="2" stroke-dasharray="6 5" opacity=".7"/>
+              <circle id="warm" cx="230" cy="110" r="90" fill="rgba(255,123,92,.18)" stroke="var(--ember)" stroke-width="2"/>
+              <circle id="pulse" cx="230" cy="110" r="10" fill="none" stroke="var(--ember)" stroke-width="2" opacity="0"/>
+              <g id="hider-me" opacity="0"><circle cx="246" cy="96" r="9" fill="var(--lantern)"/><circle cx="246" cy="96" r="16" fill="none" stroke="var(--lantern)" stroke-width="2" opacity=".5"/></g>
+              <g id="seeker-me"><circle cx="110" cy="170" r="9" fill="var(--mist)"/><path d="M110 152 L118 166 H102Z" fill="var(--mist)"/></g>
+            </svg>
+            <div class="hud"><span class="pill"><span class="dot"></span><span id="timer">11:42</span></span><span class="pill" id="left">3 hiding</span></div>
+          </div>
+          <div id="seeker-panel" class="feed" aria-live="polite"></div>
+          <div id="hider-panel" class="card" hidden>
+            <div class="row between"><h3>You're hidden</h3><span class="role h">Hider</span></div>
+            <p class="muted">Nearest seeker is about <b id="near" style="color:var(--mist)">140 m</b> away. Stay still to keep your heat low.</p>
+            <div class="heat" aria-hidden="true"><i id="heat-i" style="left:40%"></i></div>
+            <div class="row between muted"><span>Cold</span><span>Warm</span><span>Hot</span></div>
+            <button class="btn ghost" type="button" id="decoy">Drop decoy signal (1 left)</button>
+          </div>
+          <button class="btn ember" data-go="results" id="scan">Scan to tag</button>
+        </div>
+
+        <!-- 4 RESULTS -->
+        <div class="screen" id="s-results" hidden>
+          <span class="eyebrow">Round complete · 15:00</span>
+          <h3 style="font-size:24px">Maya held out the longest</h3>
+          <div class="podium">
+            <div class="p"><div class="av" style="background:#8EC5FF">JO</div><div class="bar" style="height:70px">2</div><span class="score">540</span></div>
+            <div class="p first"><div class="av" style="background:var(--lantern)">MA</div><div class="bar" style="height:100px">1</div><span class="score">610</span></div>
+            <div class="p"><div class="av" style="background:#B9A6FF">DK</div><div class="bar" style="height:50px">3</div><span class="score">455</span></div>
+          </div>
+          <div class="card">
+            <h3>Leaderboard</h3>
+            <div class="list">
+              <div class="item"><span>Maya A. · hid 14:02</span><span class="score">610</span></div>
+              <div class="item"><span>Jordan O. · 3 tags</span><span class="score">540</span></div>
+              <div class="item"><span>Dev K. · hid 11:15</span><span class="score">455</span></div>
+              <div class="item"><span>Shiva R. · 2 tags</span><span class="score">420</span></div>
+              <div class="item"><span>Lena P. · hid 6:40</span><span class="score">300</span></div>
+            </div>
+          </div>
+          <div class="kv">
+            <div><b>2.3 km</b><small>Distance walked</small></div>
+            <div><b>4 / 5</b><small>Hiders found</small></div>
+          </div>
+          <button class="btn" data-go="lobby">Play again</button>
+          <button class="btn ghost" data-go="teams">Open Teams dashboard</button>
+        </div>
+
+        <!-- 5 TEAMS -->
+        <div class="screen" id="s-teams" hidden>
+          <span class="eyebrow">Teams edition · Organiser</span>
+          <h3 style="font-size:22px">Q4 Offsite: Operations &amp; People</h3>
+          <div class="kv">
+            <div><b style="color:var(--moss)">94%</b><small>Participation</small></div>
+            <div><b>86</b><small>Players</small></div>
+            <div><b>38</b><small>Cross-team pairings</small></div>
+            <div><b>4.7 / 5</b><small>Post-event rating</small></div>
+          </div>
+          <div class="card">
+            <div class="row between"><h3>Active players by round</h3><span class="muted">6 rounds</span></div>
+            <div class="bars" aria-label="Active players per round: 71, 80, 84, 86, 83, 62">
+              <span style="height:82%"></span><span style="height:93%"></span><span style="height:97%"></span><span style="height:100%"></span><span style="height:96%"></span><span class="lo" style="height:72%"></span>
+            </div>
+            <div class="axis"><span>R1</span><span>R2</span><span>R3</span><span>R4</span><span>R5</span><span>R6</span></div>
+          </div>
+          <div class="card">
+            <h3>Department mix</h3>
+            <div class="list">
+              <div class="item"><span>Operations</span><span class="score">28</span></div>
+              <div class="item"><span>People &amp; HR</span><span class="score">19</span></div>
+              <div class="item"><span>Finance</span><span class="score">14</span></div>
+              <div class="item"><span>Sales</span><span class="score">25</span></div>
+            </div>
+          </div>
+          <button class="btn ghost" type="button">Export report for leadership</button>
+          <button class="btn" data-go="home">Back to home</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="side">
+      <nav class="steps" aria-label="Screens">
+        <button class="step" data-go="home" aria-current="step"><b>1</b>Home</button>
+        <button class="step" data-go="lobby"><b>2</b>Lobby</button>
+        <button class="step" data-go="live"><b>3</b>Live hunt</button>
+        <button class="step" data-go="results"><b>4</b>Results</button>
+        <button class="step" data-go="teams"><b>5</b>Teams</button>
+      </nav>
+      <div class="note" id="note"></div>
+      <p class="hint">Example data throughout. Names, scores and the event shown are illustrative.</p>
+    </div>
+  </section>
+
+  <!-- ---------- Commercial case ---------- -->
+  <section class="section">
+    <span class="eyebrow">The commercial case</span>
+    <h2>What it could earn, and what it could sell for</h2>
+    <p class="callout">On its own, an app idea rarely sells for much, because buyers pay for proof: a working product, users and revenue. The value grows sharply at each stage below, so the best way to increase the price is to build and launch it.</p>
+
+    <h3>1 · Pricing to customers</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Plan</th><th>Price</th><th>What it includes</th></tr></thead>
+      <tbody>
+        <tr><td>Free</td><td class="num">$0</td><td>Classic mode, up to 6 players, ads between rounds</td></tr>
+        <tr><td>Premium</td><td class="num">$4.99 / mo<small>or $29.99 / yr</small></td><td>All modes, up to 20 players, avatars, seasonal events, no ads</td></tr>
+        <tr><td>Party Pack</td><td class="num">$9.99</td><td>One-off pass for birthdays, camps and family events</td></tr>
+        <tr><td>Teams: per event</td><td class="num">$750 – $2,500</td><td>Up to 150 players, branded arena, organiser dashboard and report</td></tr>
+        <tr><td>Teams: annual</td><td class="num">$6,000 – $24,000</td><td>Unlimited events, onboarding mode, HR analytics, priority support</td></tr>
+      </tbody>
+    </table></div>
+
+    <h3>2 · Sale value of the business, by stage</h3>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Stage</th><th>Typical range</th><th>How buyers value it</th></tr></thead>
+      <tbody>
+        <tr><td>Idea and concept brief</td><td class="num">$0 – $5k</td><td>Ideas are rarely bought. Their value is in being the founder who builds them.</td></tr>
+        <tr><td>Prototype and brand (this stage)</td><td class="num">$5k – $25k</td><td>Design, code and a name. Sometimes sold to studios or agencies.</td></tr>
+        <tr><td>Launched MVP, early users, no revenue</td><td class="num">$25k – $100k</td><td>Valued on users, retention and app-store ratings</td></tr>
+        <tr><td>Consumer app with profit</td><td class="num">2.5× – 4× annual profit</td><td>Example: $60k profit → about $150k – $240k</td></tr>
+        <tr><td>B2B Teams with recurring revenue</td><td class="num">3× – 6× ARR</td><td>Example: 30 company clients at $10k = $300k ARR → about $0.9M – $1.8M</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="grid2">
+      <div class="panel">
+        <h3>What I can build with you</h3>
+        <ul>
+          <li><b>The full app code:</b> iOS and Android from one codebase (React Native / Expo)</li>
+          <li><b>The backend:</b> live location sharing, game rooms, scoring and accounts</li>
+          <li><b>Game logic:</b> warm zones, chirps, QR tagging, all five modes</li>
+          <li><b>Teams dashboard:</b> organiser tools and leadership reports for the web</li>
+          <li><b>Launch materials:</b> landing page, store listing copy, privacy policy draft</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>What you would provide</h3>
+        <ul>
+          <li><b>Developer accounts:</b> Apple ($99 a year) and Google Play ($25 one-time)</li>
+          <li><b>Field testing:</b> real people playing outdoors to tune GPS accuracy</li>
+          <li><b>Legal review:</b> location data and children's privacy (COPPA, GDPR)</li>
+          <li><b>Running costs:</b> hosting and maps, about $200 – $1,500 a month at an early scale</li>
+          <li><b>For comparison:</b> an agency would quote about $80k – $180k and 4 – 6 months for this MVP</li>
+        </ul>
+      </div>
+    </div>
+    <p class="foot">The figures are planning estimates based on typical pricing for mobile games and team-building software, and on typical multiples for small app and SaaS acquisitions. Actual values depend on traction, retention, revenue quality and market conditions.</p>
+  </section>
+</div>
+
+<script>
+(function(){
+  const notes={
+    home:{t:"Home",d:"A calm starting point. Players can host or join in one tap.",b:[["One-tap hosting","creates a game and a shareable code"],["Join by code or QR","no friend requests needed"],["Mode picker","tailors the rules to the group and the venue"]]},
+    lobby:{t:"Lobby",d:"The host sets the play zone and the rules before anyone moves.",b:[["Geofenced zone","drawn on the map. Players are warned before they leave it"],["Fair roles","assigned at random or by the host"],["Clear settings","round length, head start and player cap"]]},
+    live:{t:"Live hunt",d:"The heart of the game. Switch between the seeker and hider views.",b:[["Warm zone","starts wide and tightens every few minutes"],["Clue feed","sound chirps and reveal pulses keep the pace up"],["Hider tools","a heat meter and a single decoy signal per round"],["QR tagging","stops anyone claiming a tag they didn't make"]]},
+    results:{t:"Results",d:"A quick, fun recap that brings everyone back for another round.",b:[["Podium and leaderboard","for seekers and hiders"],["Activity stats","such as distance walked and hiders found"],["Play again","keeps the same group and zone"]]},
+    teams:{t:"Teams dashboard",d:"The corporate edition. Organisers get evidence that the event worked.",b:[["Participation and ratings","ready for leadership"],["Cross-team pairings","show how well the event broke down silos"],["Exportable report","for HR and operations leaders"]]}
+  };
+  const screens=["home","lobby","live","results","teams"];
+  const noteEl=document.getElementById("note");
+  function go(id){
+    screens.forEach(s=>document.getElementById("s-"+s).hidden=(s!==id));
+    document.querySelectorAll(".step").forEach(b=>b.toggleAttribute("aria-current",false));
+    const cur=document.querySelector('.step[data-go="'+id+'"]'); if(cur) cur.setAttribute("aria-current","step");
+    const n=notes[id];
+    noteEl.innerHTML='<h2>'+n.t+'</h2><p class="lede">'+n.d+'</p><ul>'+n.b.map(x=>'<li><b>'+x[0]+'</b>, '+x[1]+'</li>').join("")+'</ul>';
+    document.getElementById("s-"+id).scrollTop=0;
+    if(id==="live") startLive(); else stopLive();
+  }
+  document.addEventListener("click",e=>{const t=e.target.closest("[data-go]"); if(t){e.preventDefault(); go(t.dataset.go);}});
+  document.getElementById("mode-chips").addEventListener("click",e=>{const c=e.target.closest(".chip"); if(!c) return; document.querySelectorAll("#mode-chips .chip").forEach(x=>x.classList.toggle("on",x===c));});
+
+  // lobby players
+  const players=[["SR","Shiva R.","s","#F4B740"],["MA","Maya A.","h","#7FD6A8"],["JO","Jordan O.","s","#8EC5FF"],["DK","Dev K.","h","#B9A6FF"],["LP","Lena P.","h","#FF9F87"],["TC","Tom C.","h","#E3D27A"]];
+  document.getElementById("lobby-players").innerHTML=players.map(p=>'<div class="item"><span class="row"><span class="av" style="background:'+p[3]+'">'+p[0]+'</span>'+p[1]+'</span><span class="role '+p[2]+'">'+(p[2]==="s"?"Seeker":"Hider")+'</span></div>').join("");
+
+  // live hunt simulation
+  const clues=[["11:42","Round started. 5 hiders are inside the zone."],["11:20","Warm zone narrowed to 180 m."],["10:55","Chirp heard to the north-east."],["10:31","Dev was found by Jordan. Dev joins the seekers."],["10:02","Reveal pulse in 10 seconds."],["09:40","Warm zone narrowed to 120 m."]];
+  let timer=null,secs=702,tick=0,view="seeker";
+  const warm=document.getElementById("warm"),pulse=document.getElementById("pulse"),feed=document.getElementById("seeker-panel");
+  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function fmt(s){return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");}
+  function renderFeed(n){feed.innerHTML='<h3>Clues</h3>'+clues.slice(0,n).reverse().map(c=>'<div class="clue"><time>'+c[0]+'</time><span>'+c[1]+'</span></div>').join("");}
+  function startLive(){
+    stopLive(); secs=702; tick=0; renderFeed(2); setWarm(0);
+    timer=setInterval(()=>{
+      secs=Math.max(0,secs-1); tick++;
+      document.getElementById("timer").textContent=fmt(secs);
+      if(tick%3===0){renderFeed(Math.min(clues.length,2+tick/3)); }
+      if(tick===9) document.getElementById("left").textContent="2 hiding";
+      setWarm(Math.min(1,tick/18));
+      if(!reduce && tick%4===0) doPulse();
+      const d=Math.max(25,140-tick*6); document.getElementById("near").textContent=d+" m";
+      document.getElementById("heat-i").style.left=Math.min(92,40+tick*3)+"%";
+      if(tick>=18) tick=0;
+    },1000);
+  }
+  function stopLive(){if(timer) clearInterval(timer); timer=null;}
+  function setWarm(p){const r=90-50*p; warm.setAttribute("r",r); warm.setAttribute("cx",230+10*p); warm.setAttribute("cy",110-8*p);}
+  function doPulse(){
+    const cx=+warm.getAttribute("cx"),cy=+warm.getAttribute("cy"); pulse.setAttribute("cx",cx); pulse.setAttribute("cy",cy);
+    let r=8,o=.9; const iv=setInterval(()=>{r+=4;o-=.06;pulse.setAttribute("r",r);pulse.setAttribute("opacity",Math.max(0,o)); if(o<=0) clearInterval(iv);},40);
+  }
+  document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>{
+    view=b.dataset.view;
+    document.querySelectorAll("[data-view]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+    const hider=view==="hider";
+    document.getElementById("hider-panel").hidden=!hider; feed.hidden=hider;
+    document.getElementById("hider-me").setAttribute("opacity",hider?1:0);
+    document.getElementById("scan").hidden=hider;
+  }));
+  document.getElementById("decoy").addEventListener("click",e=>{e.currentTarget.textContent="Decoy dropped 80 m west"; e.currentTarget.disabled=true; e.currentTarget.style.opacity=.6;});
+
+  go("home");
+})();
+</script>
