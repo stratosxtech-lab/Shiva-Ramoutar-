@@ -1,5 +1,6 @@
 import { randomUUID, randomInt } from "crypto";
 import { db } from "./db";
+import { PLANS, PlanId } from "./plans";
 
 export const MODES = ["classic", "infection"] as const;
 export type Mode = (typeof MODES)[number];
@@ -15,6 +16,8 @@ export type Game = {
   round_seconds: number; head_start: number; radius_m: number;
   center_lat: number | null; center_lng: number | null;
   started_at: Date | null; ended_at: Date | null;
+  plan: string; max_players: number; access_code: string | null;
+  team_id: string | null; settings: Partial<Record<string, boolean>>;
 };
 export type Player = {
   id: string; game_code: string; name: string; role: "seeker" | "hider"; tag_code: string;
@@ -203,7 +206,12 @@ export async function stateFor(code: string, playerId: string) {
     game: {
       code: g.code, mode: g.mode, status: g.status, radiusM: g.radius_m,
       roundSeconds: g.round_seconds, headStart: g.head_start, hasCenter: g.center_lat != null,
-      isHost: g.host_id === me.id, ...t, warmRadius: t.phase === "seeking" ? warmRadius(g, t.progress) : g.radius_m,
+      isHost: g.host_id === me.id, plan: PLANS[(g.plan in PLANS ? g.plan : "free") as PlanId].name, maxPlayers: g.max_players,
+      features: {
+        decoys: g.settings?.decoys !== false, chirp: g.settings?.chirp !== false,
+        liveScores: g.settings?.liveScores !== false, tagRange: g.settings?.tagRange !== false,
+      },
+      ...t, warmRadius: t.phase === "seeking" ? warmRadius(g, t.progress) : g.radius_m,
     },
     me: {
       id: me.id, name: me.name, role: me.role, tagCode: me.role === "hider" && !me.found_at ? me.tag_code : null,

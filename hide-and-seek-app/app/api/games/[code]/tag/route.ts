@@ -22,7 +22,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ code: string }
       SELECT * FROM hs_players WHERE game_code = ${code} AND tag_code = ${tag} AND role = 'hider' AND found_at IS NULL`;
     if (!h) throw new GameError("That code doesn't match anyone still hiding. Check the code on their screen.");
     const fresh = (p: Player) => p.lat != null && p.loc_at && Date.now() - new Date(p.loc_at).getTime() < LOCATION_FRESH_S * 1000;
-    if (fresh(me) && fresh(h)) {
+    if (g.settings?.tagRange !== false && fresh(me) && fresh(h)) {
       const d = distance(me.lat!, me.lng!, h.lat!, h.lng!);
       if (d > TAG_RANGE_M) throw new GameError(`You're about ${Math.round(d)} m apart. Get within ${TAG_RANGE_M} m to tag.`);
     }

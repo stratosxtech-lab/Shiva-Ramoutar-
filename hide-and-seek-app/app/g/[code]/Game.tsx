@@ -9,7 +9,8 @@ type State = {
     code: string; mode: "classic" | "infection"; status: "lobby" | "live" | "ended"; radiusM: number;
     roundSeconds: number; headStart: number; hasCenter: boolean; isHost: boolean;
     phase: "lobby" | "hiding" | "seeking" | "ended"; hideEndsAt: number | null; seekEndsAt: number | null;
-    seekElapsed: number; progress: number; warmRadius: number;
+    seekElapsed: number; progress: number; warmRadius: number; plan: string; maxPlayers: number;
+    features: { decoys: boolean; chirp: boolean; liveScores: boolean; tagRange: boolean };
   };
   me: {
     id: string; name: string; role: "seeker" | "hider"; tagCode: string | null; found: boolean; tags: number;
@@ -110,7 +111,7 @@ export default function Game({ code }: { code: string }) {
   const seekElapsed = s && s.game.hideEndsAt ? Math.max(0, (now + offset.current - s.game.hideEndsAt) / 1000) : 0;
   const amHiding = s?.game.phase === "seeking" && s.me.role === "hider" && !s.me.found;
   useEffect(() => {
-    if (!amHiding || !sound) return;
+    if (!amHiding || !sound || !s?.game.features.chirp) return;
     const bucket = Math.floor(seekElapsed / CHIRP_EVERY);
     if (bucket > 0 && bucket !== lastChirp.current) { lastChirp.current = bucket; chirp(); }
     if (lastChirp.current === -1) lastChirp.current = bucket;
@@ -197,6 +198,8 @@ export default function Game({ code }: { code: string }) {
             <div><b>{g.roundSeconds / 60} min</b><small>Round length</small></div>
             <div><b>{g.headStart} s</b><small>Head start</small></div>
             <div><b>{g.radiusM} m</b><small>Zone radius</small></div>
+            <div><b>{g.plan}</b><small>Plan</small></div>
+            <div><b>{s.players.length} / {g.maxPlayers}</b><small>Players</small></div>
           </div>
           <div className="card">
             <div className="row between"><h3>Players ({s.players.length})</h3><span className="muted">Seeker picked at random</span></div>
@@ -231,7 +234,7 @@ export default function Game({ code }: { code: string }) {
           {s.me.role === "seeker" && (
             <div className="card">
               <div className="row between"><h3>Tag a hider</h3><span className="role seeker">Seeker{s.me.tags ? ` · ${s.me.tags} tagged` : ""}</span></div>
-              <p className="muted">Found someone? Enter the 4-digit code on their screen. You need to be within about 60 m.</p>
+              <p className="muted">Found someone? Enter the 4-digit code on their screen.{g.features.tagRange ? " You need to be within about 60 m." : ""}</p>
               <form className="row" onSubmit={async (e) => {
                 e.preventDefault();
                 if (await act("tag", { tagCode: tagInput }, (r) => `You found ${r.found}!`)) setTagInput("");
@@ -249,12 +252,14 @@ export default function Game({ code }: { code: string }) {
               <p className="muted">If a seeker finds you, show them this code.</p>
               <div className="bigcode">{s.me.tagCode}</div>
               <Heat s={s} />
-              {!sound
+              {g.features.chirp && (!sound
                 ? <button className="btn ghost" onClick={enableSound}>Turn on chirp sound (required)</button>
-                : <p className="muted">Chirp is on. Your phone will chirp every 2 minutes during the hunt.</p>}
-              <button className="btn ghost" disabled={busy || s.me.decoyUsed || g.phase !== "seeking"} onClick={() => act("decoy", {}, () => "Decoy dropped. The warm zone is pulled away from you for 60 seconds.")}>
-                {s.me.decoyActive ? "Decoy active" : s.me.decoyUsed ? "Decoy used" : "Drop decoy signal (1 per round)"}
-              </button>
+                : <p className="muted">Chirp is on. Your phone will chirp every 2 minutes during the hunt.</p>)}
+              {g.features.decoys && (
+                <button className="btn ghost" disabled={busy || s.me.decoyUsed || g.phase !== "seeking"} onClick={() => act("decoy", {}, () => "Decoy dropped. The warm zone is pulled away from you for 60 seconds.")}>
+                  {s.me.decoyActive ? "Decoy active" : s.me.decoyUsed ? "Decoy used" : "Drop decoy signal (1 per round)"}
+                </button>
+              )}
             </div>
           )}
 
@@ -263,7 +268,7 @@ export default function Game({ code }: { code: string }) {
           )}
 
           <Feed s={s} />
-          <Scores s={s} />
+          {g.features.liveScores && <Scores s={s} />}
         </>
       )}
 

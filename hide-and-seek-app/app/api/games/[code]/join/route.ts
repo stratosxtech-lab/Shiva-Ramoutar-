@@ -2,7 +2,6 @@ import { db } from "@/lib/db";
 import { GameError, addEvent, body, cleanName, handle, loadGame, normalizeCode, newId, uniqueTag, loadPlayers } from "@/lib/game";
 
 export const dynamic = "force-dynamic";
-const MAX_PLAYERS = 30;
 
 export async function POST(req: Request, ctx: { params: Promise<{ code: string }> }) {
   return handle(async () => {
@@ -11,7 +10,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ code: string }
     const name = cleanName(b.name);
     const g = await loadGame(code);
     if (g.status !== "lobby") throw new GameError("This game has already started. Ask the host to start a new one.", 409);
-    if ((await loadPlayers(code)).length >= MAX_PLAYERS) throw new GameError(`This game is full (${MAX_PLAYERS} players).`, 409);
+    if ((await loadPlayers(code)).length >= g.max_players) {
+      throw new GameError(`This game is full (${g.max_players} players on the host's plan). The host can upgrade for a bigger group.`, 409);
+    }
     const sql = await db();
     const id = newId();
     await sql`INSERT INTO hs_players (id, game_code, name, tag_code) VALUES (${id}, ${code}, ${name}, ${await uniqueTag(code)})`;

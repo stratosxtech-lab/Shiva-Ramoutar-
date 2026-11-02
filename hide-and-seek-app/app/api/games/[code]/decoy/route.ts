@@ -11,6 +11,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ code: string }
     const g = await loadGame(code);
     const me = await requirePlayer(code, b.playerId);
     if (g.status !== "live" || me.role !== "hider" || me.found_at) throw new GameError("Decoys are for hiders during a live round.");
+    if (g.settings?.decoys === false) throw new GameError("Decoy signals are switched off for this game.", 403);
     if (me.decoy_at) throw new GameError("You've already used your decoy this round.");
     if (me.lat == null || me.lng == null) throw new GameError("Turn on location sharing to drop a decoy.");
     const angle = Math.random() * 2 * Math.PI, dist = 80;

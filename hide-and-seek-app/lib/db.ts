@@ -80,4 +80,54 @@ async function migrate(sql: ReturnType<typeof postgres>) {
       text text NOT NULL
     )`;
   await sql`CREATE INDEX IF NOT EXISTS hs_events_game ON hs_events(game_code, id)`;
+  await sql`ALTER TABLE hs_games ADD COLUMN IF NOT EXISTS plan text NOT NULL DEFAULT 'free'`;
+  await sql`ALTER TABLE hs_games ADD COLUMN IF NOT EXISTS max_players int NOT NULL DEFAULT 6`;
+  await sql`ALTER TABLE hs_games ADD COLUMN IF NOT EXISTS access_code text`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS hs_access_codes (
+      code text PRIMARY KEY,
+      plan text NOT NULL,
+      label text NOT NULL DEFAULT '',
+      uses_left int,
+      expires_at timestamptz NOT NULL,
+      games_hosted int NOT NULL DEFAULT 0,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS hs_leads (
+      id bigserial PRIMARY KEY,
+      kind text NOT NULL,
+      plan text,
+      name text NOT NULL,
+      email text NOT NULL,
+      company text,
+      team_size int,
+      event_date text,
+      message text,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`;
+  await sql`CREATE TABLE IF NOT EXISTS hs_settings (key text PRIMARY KEY, value boolean NOT NULL)`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS hs_teams (
+      id text PRIMARY KEY,
+      name text NOT NULL,
+      access_code text NOT NULL UNIQUE REFERENCES hs_access_codes(code),
+      admin_key text NOT NULL,
+      settings jsonb NOT NULL DEFAULT '{}'::jsonb,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS hs_team_members (
+      id text PRIMARY KEY,
+      team_id text NOT NULL REFERENCES hs_teams(id) ON DELETE CASCADE,
+      name text NOT NULL,
+      email text NOT NULL DEFAULT '',
+      role text NOT NULL DEFAULT 'host',
+      host_code text NOT NULL UNIQUE,
+      active boolean NOT NULL DEFAULT true,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`;
+  await sql`ALTER TABLE hs_games ADD COLUMN IF NOT EXISTS team_id text`;
+  await sql`ALTER TABLE hs_games ADD COLUMN IF NOT EXISTS host_member text`;
+  await sql`ALTER TABLE hs_games ADD COLUMN IF NOT EXISTS settings jsonb NOT NULL DEFAULT '{}'::jsonb`;
 }
