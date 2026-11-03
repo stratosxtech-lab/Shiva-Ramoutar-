@@ -3,6 +3,7 @@ import {
   GameError, LOCATION_FRESH_S, Player, TAG_RANGE_M, addEvent, body, distance, handle,
   loadGame, normalizeCode, requirePlayer, settle, timeline,
 } from "@/lib/game";
+import { finalStretch, isLive } from "@/lib/hunt";
 
 export const dynamic = "force-dynamic";
 
@@ -26,13 +27,23 @@ export async function POST(req: Request, ctx: { params: Promise<{ code: string }
       const d = distance(me.lat!, me.lng!, h.lat!, h.lng!);
       if (d > TAG_RANGE_M) throw new GameError(`You're about ${Math.round(d)} m apart. Get within ${TAG_RANGE_M} m to tag.`);
     }
+    if (isLive(h.shield_until, Date.now())) {
+      const s = Math.ceil((new Date(h.shield_until!).getTime() - Date.now()) / 1000);
+      throw new GameError(`${h.name} has a Shield! Try again in ${s} seconds. Don't let them get away.`);
+    }
     const newRole = g.mode === "infection" ? "seeker" : "hider";
     const [done] = await sql`
       UPDATE hs_players SET found_at = now(), found_by = ${me.id}, role = ${newRole}
       WHERE id = ${h.id} AND found_at IS NULL RETURNING id`;
     if (!done) throw new GameError("Someone tagged them first.");
-    await sql`UPDATE hs_players SET tags = tags + 1 WHERE id = ${me.id}`;
-    await addEvent(code, `${me.name} found ${h.name}.${newRole === "seeker" ? ` ${h.name} joins the seekers.` : ""}`);
+    const twists = g.settings?.huntEvents !== false;
+    const [{ n }] = await sql<{ n: number }[]>`SELECT count(*)::int AS n FROM hs_players WHERE game_code = ${code} AND first_find`;
+    const first = twists && n === 0 && g.half === 1;
+    const double = twists && finalStretch(g);
+    const bonus = (first ? 50 : 0) + (double ? 150 : 0);
+    await sql`UPDATE hs_players SET tags = tags + 1, bonus = bonus + ${bonus}, first_find = first_find OR ${first} WHERE id = ${me.id}`;
+    await addEvent(code, `${me.name} found ${h.name}.${newRole === "seeker" ? ` ${h.name} joins the seekers.` : ""}`
+      + (first ? " First find! +50" : "") + (double ? " Final countdown: double points!" : ""));
     await settle(g);
     return { ok: true, found: h.name };
   });

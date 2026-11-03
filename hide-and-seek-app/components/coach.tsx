@@ -93,6 +93,7 @@ export function RadarLegend({ seeker }: { seeker: boolean }) {
       <span><i style={{ background: seeker ? "var(--mist)" : "var(--lantern)" }} />You</span>
       <span><i className="ring" />Play zone</span>
       {seeker && <span><i style={{ background: "rgba(255,123,92,.5)", border: "2px solid var(--ember)" }} />Hiders are somewhere in here</span>}
+      <span><i style={{ background: "var(--moss)", borderRadius: 3 }} />Mystery box</span>
     </div>
   );
 }

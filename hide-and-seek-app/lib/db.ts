@@ -172,6 +172,32 @@ async function migrate(sql: ReturnType<typeof postgres>) {
   await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS decoys_left int NOT NULL DEFAULT 1`;
   await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS pulse_used boolean NOT NULL DEFAULT false`;
   await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS pulse_until timestamptz`;
+  // Hunt twists: mystery boxes, power-ups, Freeze event, bonuses
+  await sql`
+    CREATE TABLE IF NOT EXISTS hs_boxes (
+      id bigserial PRIMARY KEY,
+      game_code text NOT NULL REFERENCES hs_games(code) ON DELETE CASCADE,
+      half int NOT NULL DEFAULT 1,
+      slot int NOT NULL,
+      lat double precision NOT NULL,
+      lng double precision NOT NULL,
+      spawned_at timestamptz NOT NULL DEFAULT now(),
+      claimed_by text,
+      claimed_at timestamptz,
+      UNIQUE (game_code, half, slot)
+    )`;
+  for (const col of ["shield_until", "ghost_until", "tracker_until", "spotted_until"]) {
+    await sql.unsafe(`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS ${col} timestamptz`);
+  }
+  await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS freeze_lat double precision`;
+  await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS freeze_lng double precision`;
+  await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS boxes int NOT NULL DEFAULT 0`;
+  await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS bonus int NOT NULL DEFAULT 0`;
+  await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS first_find boolean NOT NULL DEFAULT false`;
+  await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS min_seeker_m int`;
+  await sql`ALTER TABLE hs_games ADD COLUMN IF NOT EXISTS sonar_at timestamptz`;
+  await sql`ALTER TABLE hs_games ADD COLUMN IF NOT EXISTS squeeze_until timestamptz`;
+  await sql`ALTER TABLE hs_games ADD COLUMN IF NOT EXISTS freeze_stage int NOT NULL DEFAULT 0`;
   // Email log, so the owner can see what was sent
   await sql`
     CREATE TABLE IF NOT EXISTS hs_emails (

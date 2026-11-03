@@ -1,6 +1,7 @@
 import { randomUUID, randomInt } from "crypto";
 import { db } from "./db";
 import { PLANS, PlanId } from "./plans";
+import { BOX_RANGE_M, CLOSE_CALL_M, activeBoxes, badgesFor, finalStretch, freezeWindow, isLive, tick, trackerFor } from "./hunt";
 
 export const MODES = ["classic", "infection", "shadow", "duel", "indoor"] as const;
 export const MODE_INFO: Record<(typeof MODES)[number], { label: string; note: string }> = {
@@ -27,6 +28,7 @@ export type Game = {
   started_at: Date | null; ended_at: Date | null;
   plan: string; max_players: number; access_code: string | null;
   team_id: string | null; settings: Partial<Record<string, boolean>>; half: number;
+  sonar_at: Date | null; squeeze_until: Date | null; freeze_stage: number;
 };
 export type Player = {
   id: string; game_code: string; name: string; role: "seeker" | "hider"; tag_code: string;
@@ -35,6 +37,8 @@ export type Player = {
   decoy_lat: number | null; decoy_lng: number | null; decoy_at: Date | null;
   score: number; joined_at: Date;
   team: string | null; decoys_left: number; pulse_used: boolean; pulse_until: Date | null;
+  shield_until: Date | null; ghost_until: Date | null; tracker_until: Date | null; spotted_until: Date | null;
+  freeze_lat: number | null; freeze_lng: number | null; boxes: number; bonus: number; first_find: boolean; min_seeker_m: number | null;
 };
 
 export class GameError extends Error {
@@ -110,7 +114,7 @@ export function scoreFor(g: Game, p: Player, now = Date.now()) {
   const t = timeline(g, now);
   if (!t.hideEndsAt) return 0;
   const end = g.ended_at ? new Date(g.ended_at).getTime() : Math.min(now, t.seekEndsAt!);
-  let pts = p.tags * 150;
+  let pts = p.tags * 150 + (p.bonus ?? 0);
   const wasHider = p.role === "hider" || !!p.found_at;
   if (wasHider) {
     const until = p.found_at ? new Date(p.found_at).getTime() : end;
@@ -155,12 +159,15 @@ export async function settle(g: Game): Promise<Game> {
   if (g.mode === "shadow" && g.half === 1) {
     // Half-time: bank each player's points, swap the teams' roles and restart the clock.
     const [moved] = await sql<Game[]>`
-      UPDATE hs_games SET half = 2, started_at = now() WHERE code = ${g.code} AND status = 'live' AND half = 1 RETURNING *`;
+      UPDATE hs_games SET half = 2, started_at = now(), freeze_stage = 0, squeeze_until = NULL
+      WHERE code = ${g.code} AND status = 'live' AND half = 1 RETURNING *`;
     if (!moved) return loadGame(g.code);
     for (const p of players) {
       await sql`
         UPDATE hs_players SET score = score + ${scoreFor(g, p)}, tags = 0, found_at = NULL, found_by = NULL,
-          role = ${p.team === "blue" ? "hider" : "seeker"}, decoy_at = NULL, decoy_lat = NULL, decoy_lng = NULL, decoys_left = 1
+          role = ${p.team === "blue" ? "hider" : "seeker"}, decoy_at = NULL, decoy_lat = NULL, decoy_lng = NULL, decoys_left = 1,
+          bonus = 0, min_seeker_m = NULL, freeze_lat = NULL, freeze_lng = NULL,
+          shield_until = NULL, ghost_until = NULL, tracker_until = NULL, spotted_until = NULL
         WHERE id = ${p.id}`;
     }
     await addEvent(g.code, `Half-time. Blue team hides now, Red team seeks. ${g.head_start} seconds to hide.`);
@@ -171,6 +178,15 @@ export async function settle(g: Game): Promise<Game> {
     UPDATE hs_games SET status = 'ended', ended_at = ${endedAt}
     WHERE code = ${g.code} AND status = 'live' RETURNING *`;
   if (!updated) return loadGame(g.code);
+  if (g.settings?.huntEvents !== false) {
+    for (const p of players) {
+      if (p.role === "hider" && !p.found_at && p.min_seeker_m != null && p.min_seeker_m <= CLOSE_CALL_M) {
+        p.bonus += 100;
+        await sql`UPDATE hs_players SET bonus = bonus + 100 WHERE id = ${p.id}`;
+        await addEvent(g.code, `Close call bonus! ${p.name} survived with a seeker just ${p.min_seeker_m} m away. +100`);
+      }
+    }
+  }
   for (const p of players) {
     await sql`UPDATE hs_players SET score = score + ${scoreFor(updated, p)} WHERE id = ${p.id}`;
   }
@@ -182,6 +198,9 @@ export async function settle(g: Game): Promise<Game> {
 export async function stateFor(code: string, playerId: string) {
   let g = await loadGame(code);
   g = await settle(g);
+  await requirePlayer(code, playerId);
+  await tick(g, await loadPlayers(code));
+  g = await loadGame(code);
   const me = await requirePlayer(code, playerId);
   const players = await loadPlayers(code);
   const sql = await db();
@@ -198,7 +217,7 @@ export async function stateFor(code: string, playerId: string) {
   if (g.status === "live" && g.center_lat != null) {
     if (me.role === "seeker" && t.phase === "seeking" && g.mode !== "indoor") {
       const pts = players
-        .filter((p) => p.role === "hider" && !p.found_at && fresh(p))
+        .filter((p) => p.role === "hider" && !p.found_at && fresh(p) && !isLive(p.ghost_until, now))
         .map((p) => {
           const decoy = !pulsing && p.decoy_at && p.decoy_lat != null && now - new Date(p.decoy_at).getTime() < decoySeconds(g) * 1000;
           return decoy ? relative(g, p.decoy_lat!, p.decoy_lng!) : relative(g, p.lat!, p.lng!);
@@ -206,9 +225,9 @@ export async function stateFor(code: string, playerId: string) {
       if (pts.length) {
         const cx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
         const cy = pts.reduce((s, p) => s + p.y, 0) / pts.length;
-        const r = warmRadius(g, t.progress);
-        // Offset the circle so the centre never points straight at a hider. Changes every 30 seconds.
-        const bucket = Math.floor(t.seekElapsed / 30);
+        const r = Math.round(warmRadius(g, t.progress) * (isLive(g.squeeze_until, now) ? 0.5 : 1));
+        // Offset the circle so the centre never points straight at a hider. Moves every 30 seconds (10 at the end).
+        const bucket = Math.floor(t.seekElapsed / (finalStretch(g, now) ? 10 : 30));
         const seed = [...(g.code + bucket)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
         const angle = (seed % 360) * (Math.PI / 180);
         const off = r * (pulsing ? 0.15 : 0.45) * ((seed % 100) / 100);
@@ -226,6 +245,15 @@ export async function stateFor(code: string, playerId: string) {
   const myPos = me.lat != null && g.center_lat != null ? relative(g, me.lat, me.lng!) : null;
   const decoyActive = !!(me.decoy_at && now - new Date(me.decoy_at).getTime() < decoySeconds(g) * 1000);
   const live = (p: Player) => (g.status === "ended" ? p.score : p.score + scoreFor(g, p, now));
+  const twists = g.settings?.huntEvents !== false && g.mode !== "indoor";
+  const fw = g.started_at ? freezeWindow(g) : null;
+  const left = (d: Date | null) => (isLive(d, now) ? Math.ceil((new Date(d!).getTime() - now) / 1000) : 0);
+  const boxes = g.mode === "indoor" ? [] : await activeBoxes(g, now);
+  const spotted = me.role === "seeker" && g.status === "live"
+    ? players.filter((p) => p.role === "hider" && !p.found_at && isLive(p.spotted_until, now) && p.lat != null && g.center_lat != null)
+      .map((p) => ({ name: p.name, ...relative(g, p.lat!, p.lng!) }))
+    : [];
+  const badges = g.status === "ended" ? badgesFor(players) : {};
   const teams = g.mode === "shadow"
     ? (["red", "blue"] as const).map((team) => ({ team, score: players.filter((p) => p.team === team).reduce((s, p) => s + live(p), 0) }))
     : null;
@@ -249,10 +277,12 @@ export async function stateFor(code: string, playerId: string) {
       outside: myPos ? Math.hypot(myPos.x, myPos.y) > g.radius_m : false,
       decoyUsed: me.decoys_left <= 0, decoysLeft: me.decoys_left, decoyActive, nearestSeeker, team: me.team,
       canPulse: g.mode === "duel" && me.role === "seeker" && !me.pulse_used, pulseActive: pulsing,
+      shield: left(me.shield_until), ghost: left(me.ghost_until), boxes: me.boxes,
+      tracker: trackerFor(me, players, now),
     },
     players: players.map((p) => ({
       id: p.id, name: p.name, role: p.role, isHost: p.id === g.host_id, found: !!p.found_at,
-      wasHider: p.role === "hider" || !!p.found_at, tags: p.tags, team: p.team,
+      wasHider: p.role === "hider" || !!p.found_at, tags: p.tags, team: p.team, boxes: p.boxes, badges: badges[p.id] ?? [],
       score: live(p),
       hiddenSeconds: t.hideEndsAt && (p.role === "hider" || p.found_at)
         ? Math.floor(((p.found_at ? new Date(p.found_at).getTime() : Math.min(now, g.ended_at ? new Date(g.ended_at).getTime() : t.seekEndsAt!)) - t.hideEndsAt) / 1000)
@@ -260,6 +290,15 @@ export async function stateFor(code: string, playerId: string) {
     })),
     warmZone,
     teams,
+    boxes,
+    boxRange: BOX_RANGE_M,
+    spotted,
+    hunt: {
+      freeze: twists && fw && g.status === "live" ? { startsAt: fw.start, endsAt: fw.end } : null,
+      final: twists && finalStretch(g, now),
+      squeeze: left(g.squeeze_until),
+      sonarAt: g.sonar_at ? new Date(g.sonar_at).getTime() : null,
+    },
     hidersLeft: players.filter((p) => p.role === "hider" && !p.found_at).length,
     events: events.map((e) => ({ id: String(e.id), at: new Date(e.at).getTime(), text: e.text })),
   };

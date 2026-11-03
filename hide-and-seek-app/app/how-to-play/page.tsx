@@ -57,6 +57,16 @@ export default function HowToPlay() {
         <p>Seekers get 150 points for each hider they find. Hiders get 1 point for every 2 seconds they stay hidden, plus 200 if they&apos;re never found. Highest score wins.</p>
       </div>
 
+      <div className="card">
+        <h3>Twists that keep every hunt exciting</h3>
+        <ul className="steps">
+          <li><b>Mystery boxes.</b> A green box drops on the map every 90 seconds. Walk to it and tap <b>Grab it!</b> for a random power-up. Seekers can get a <b>Tracker</b> (an arrow to the nearest hider), <b>Sonar</b> (every hider&apos;s phone chirps) or <b>Squeeze</b> (the warm zone halves). Hiders can get a <b>Shield</b> (can&apos;t be tagged for 60 seconds), <b>Ghost</b> (off the seekers&apos; map) or an extra decoy. Hiders have to leave their spot to grab one, so it&apos;s a gamble.</li>
+          <li><b>Freeze!</b> Halfway through the hunt, hiders must stay still for 30 seconds. Anyone who moves more than 20 m appears on the seekers&apos; map.</li>
+          <li><b>Final countdown.</b> In the last 2 minutes, every find is worth double.</li>
+          <li><b>Bonuses and badges.</b> +50 for the first find, +100 for a hider who survives with a seeker within 15 m. Badges at the end: Bloodhound, First Find, Close Call, Ghost and Collector.</li>
+        </ul>
+      </div>
+
       <h2>Games you can play</h2>
       <div className="tbl"><table>
         <thead><tr><th>Game</th><th>How it works</th><th>Players</th></tr></thead>

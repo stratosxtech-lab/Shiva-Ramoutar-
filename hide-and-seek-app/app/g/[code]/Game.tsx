@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Scanner, TagQR } from "@/components/qr";
 import { Coach, RadarLegend, RoleReveal } from "@/components/coach";
+import { BoxCard, Effects, FreezeAlert, compass } from "@/components/twists";
 
 type State = {
   now: number;
@@ -17,11 +18,16 @@ type State = {
   me: {
     id: string; name: string; role: "seeker" | "hider"; tagCode: string | null; found: boolean; tags: number;
     pos: { x: number; y: number } | null; outside: boolean; decoyUsed: boolean; decoyActive: boolean; nearestSeeker: number | null;
+    shield: number; ghost: number; boxes: number; tracker: { bearing: number; distance: number; seconds: number } | null;
     decoysLeft: number; team: "red" | "blue" | null; canPulse: boolean; pulseActive: boolean;
   };
-  players: { id: string; name: string; role: "seeker" | "hider"; isHost: boolean; found: boolean; wasHider: boolean; tags: number; score: number; hiddenSeconds: number | null; team: "red" | "blue" | null }[];
+  players: { id: string; name: string; role: "seeker" | "hider"; isHost: boolean; found: boolean; wasHider: boolean; tags: number; score: number; hiddenSeconds: number | null; team: "red" | "blue" | null; boxes: number; badges: string[] }[];
   warmZone: { x: number; y: number; r: number } | null;
   teams: { team: "red" | "blue"; score: number }[] | null;
+  boxes: { id: string; x: number; y: number; expiresIn: number }[];
+  boxRange: number;
+  spotted: { name: string; x: number; y: number }[];
+  hunt: { freeze: { startsAt: number; endsAt: number } | null; final: boolean; squeeze: number; sonarAt: number | null };
   hidersLeft: number;
   events: { id: string; at: number; text: string }[];
 };
@@ -59,6 +65,7 @@ export default function Game({ code }: { code: string }) {
   const coords = useRef<{ lat: number; lng: number } | null>(null);
   const lastSent = useRef(0);
   const lastChirp = useRef(-1);
+  const lastSonar = useRef<number | null>(null);
   const audio = useRef<AudioContext | null>(null);
 
   // Who am I? The link carries the player id so each tab or phone is its own player.
@@ -122,6 +129,17 @@ export default function Game({ code }: { code: string }) {
     const bucket = Math.floor(seekElapsed / (s?.game.chirpEvery ?? 120));
     if (bucket > 0 && bucket !== lastChirp.current) { lastChirp.current = bucket; chirp(); }
     if (lastChirp.current === -1) lastChirp.current = bucket;
+  });
+
+  // Sonar power-up: every hider's phone chirps at once.
+  useEffect(() => {
+    const at = s?.hunt.sonarAt ?? null;
+    if (at == null) return;
+    if (lastSonar.current == null) { lastSonar.current = at; return; }
+    if (at !== lastSonar.current) {
+      lastSonar.current = at;
+      if (amHiding && sound) { chirp(); setTimeout(chirp, 700); setTimeout(chirp, 1400); }
+    }
   });
 
   function chirp() {
@@ -250,6 +268,7 @@ export default function Game({ code }: { code: string }) {
       {g.status === "live" && (
         <>
           <RoleReveal game={g.code} role={s.me.role} half={g.half} team={s.me.team} mode={g.mode} />
+          <FreezeAlert freeze={s.hunt.freeze} serverNow={serverNow} role={s.me.role} found={s.me.found} />
           {s.teams && <TeamBar s={s} />}
           {g.mode === "indoor" ? <IndoorCard s={s} serverNow={serverNow} /> : (
             <>
@@ -258,6 +277,11 @@ export default function Game({ code }: { code: string }) {
             </>
           )}
           {s.me.outside && <div className="error">You're outside the play zone. Head back towards the centre.</div>}
+          <Effects me={s.me} squeeze={s.hunt.squeeze} final={s.hunt.final} />
+          {g.phase === "seeking" && !(s.me.role === "hider" && s.me.found) && (
+            <BoxCard boxes={s.boxes} me={s.me.pos} range={s.boxRange} busy={busy}
+              onGrab={(id) => act("box", { boxId: id }, (r) => `You got ${r.label}! ${r.text}`)} />
+          )}
 
           {s.me.role === "seeker" && (
             <div className="card">
@@ -332,6 +356,24 @@ function Radar({ s, serverNow }: { s: State; serverNow: number }) {
         <line x1={0} y1={-R} x2={0} y2={R} stroke="var(--path)" strokeWidth={R / 120} />
         <circle r={g.radiusM} fill="rgba(244,183,64,.06)" stroke="var(--lantern)" strokeWidth={R / 90} strokeDasharray={`${R / 25} ${R / 35}`} />
         <WarmZone s={s} R={R} />
+        {s.boxes.map((b) => (
+          <g key={b.id} transform={`translate(${b.x} ${-b.y})`}>
+            <rect x={-R / 20} y={-R / 20} width={R / 10} height={R / 10} rx={R / 80} fill="var(--moss)" stroke="#fff" strokeWidth={R / 200} className="box-pulse" />
+            <text y={R / 60} textAnchor="middle" fontSize={R / 14} fontWeight={800} fill="#10171D">?</text>
+          </g>
+        ))}
+        {s.spotted.map((p) => (
+          <g key={p.name} transform={`translate(${p.x} ${-p.y})`}>
+            <circle r={R / 16} fill="var(--ember)" className="ping-dot" />
+            <text y={-R / 12} textAnchor="middle" fontSize={R / 16} fontWeight={700} fill="var(--ember)">{p.name}</text>
+          </g>
+        ))}
+        {s.me.pos && s.me.tracker && (
+          <g transform={`translate(${s.me.pos.x} ${-s.me.pos.y}) rotate(${s.me.tracker.bearing})`}>
+            <line x1={0} y1={0} x2={0} y2={-R / 2.4} stroke="var(--ember)" strokeWidth={R / 60} strokeLinecap="round" />
+            <path d={`M ${-R / 18} ${-R / 2.4 + R / 14} L 0 ${-R / 2.4 - R / 30} L ${R / 18} ${-R / 2.4 + R / 14} Z`} fill="var(--ember)" />
+          </g>
+        )}
         {s.me.pos && (
           <g transform={`translate(${s.me.pos.x} ${-s.me.pos.y})`}>
             <circle r={R / 18} fill={s.me.role === "seeker" ? "var(--mist)" : "var(--lantern)"} />
@@ -342,8 +384,11 @@ function Radar({ s, serverNow }: { s: State; serverNow: number }) {
       </svg>
       <div className="hud">
         <span className="pill"><span className="dot" />{clock(left)}</span>
-        <span className="pill">{s.hidersLeft} hiding</span>
+        {s.hunt.final ? <span className="pill final">FINAL · x2</span> : <span className="pill">{s.hidersLeft} hiding</span>}
       </div>
+      {s.me.tracker && (
+        <div className="tracker-tag">Tracker: nearest hider {s.me.tracker.distance} m {compass(s.me.tracker.bearing)}</div>
+      )}
     </div>
   );
 }
@@ -439,7 +484,9 @@ function Results({ s }: { s: State }) {
         <div className="list">
           {rows.map((p) => (
             <div className="item" key={p.id}>
-              <span>{p.name}{p.id === s.me.id ? " (you)" : ""} <span className="muted">· {describe(p)}</span></span>
+              <span>{p.name}{p.id === s.me.id ? " (you)" : ""} <span className="muted">· {describe(p)}</span>
+                {p.badges.length > 0 && <span className="badges">{p.badges.map((b) => <span key={b} className="badge ok">{b}</span>)}</span>}
+              </span>
               <span className="num">{p.score}</span>
             </div>
           ))}

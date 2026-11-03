@@ -159,3 +159,26 @@ details[open] > summary::before{content:"▾ "}
 .dots i{width:8px;height:8px;border-radius:50%;background:var(--dusk-3)}
 .dots i.on{background:var(--lantern)}
 details.card > summary{font-weight:600}
+/* ---- Hunt twists ---- */
+.btn.green{background:var(--moss);color:#0B2016}
+.box-card{border:2px solid var(--moss)}
+.effects{display:flex;flex-wrap:wrap;gap:6px}
+.effect{font:700 12px var(--body);padding:6px 10px;border-radius:999px;background:var(--dusk-3)}
+.effect.good{background:rgba(95,191,142,.18);color:var(--moss)}
+.effect.warn{background:rgba(255,123,92,.18);color:var(--ember)}
+.effect.final{background:var(--ember);color:#2B0B03}
+.pill.final{background:var(--ember);color:#2B0B03}
+.freeze{border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.freeze b{font:800 24px var(--display)}
+.freeze.soon{background:rgba(142,197,255,.16);color:#BFDDFF}
+.freeze.on{background:#8EC5FF;color:#0B1B2B}
+.tracker-tag{position:absolute;left:10px;right:10px;bottom:10px;text-align:center;background:rgba(10,17,24,.85);color:var(--ember);font:700 13px var(--body);padding:6px 10px;border-radius:999px}
+.badges{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+@media (prefers-reduced-motion:no-preference){
+  .box-pulse{animation:boxpulse 1.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes boxpulse{50%{transform:scale(1.25)}}
+  .ping-dot{animation:pingdot 1s ease-in-out infinite}
+  @keyframes pingdot{50%{opacity:.35}}
+  .freeze.on{animation:flash 1s ease-in-out infinite}
+  @keyframes flash{50%{filter:brightness(1.15)}}
+}

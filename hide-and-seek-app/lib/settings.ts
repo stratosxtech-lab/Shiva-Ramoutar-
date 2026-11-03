@@ -12,6 +12,8 @@ export const SETTINGS = {
   shadow: { label: "Shadow Teams mode", help: "Two teams take turns hiding and seeking.", team: true, default: true },
   duel: { label: "Decoy Duel mode", help: "Three decoys per hider and one reveal pulse per seeker.", team: true, default: true },
   indoor: { label: "Indoor mode", help: "No GPS. Players find hiders by their chirps.", team: true, default: true },
+  powerUps: { label: "Mystery boxes and power-ups", help: "Boxes drop on the map during the hunt. Grab one for a random power-up.", team: true, default: true },
+  huntEvents: { label: "Freeze! and final countdown", help: "A Freeze! event halfway through and double points in the last 2 minutes.", team: true, default: true },
   decoys: { label: "Decoy signals", help: "Each hider can drop one decoy per round.", team: true, default: true },
   chirp: { label: "Chirp sound", help: "Hiders' phones chirp every 2 minutes during the hunt.", team: true, default: true },
   tagRange: { label: "60 m tag range check", help: "Seekers must be within about 60 m to tag a hider.", team: true, default: true },
