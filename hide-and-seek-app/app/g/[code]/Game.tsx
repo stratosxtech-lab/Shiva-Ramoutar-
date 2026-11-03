@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { Scanner, TagQR } from "@/components/qr";
 
 type State = {
   now: number;
@@ -49,6 +50,7 @@ export default function Game({ code }: { code: string }) {
   const [tagInput, setTagInput] = useState("");
   const [toast, setToast] = useState("");
   const [sound, setSound] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const offset = useRef(0);
   const coords = useRef<{ lat: number; lng: number } | null>(null);
   const lastSent = useRef(0);
@@ -151,6 +153,12 @@ export default function Game({ code }: { code: string }) {
     finally { setBusy(false); }
   }
 
+  const tagByScan = useCallback((tag: string) => {
+    setScanning(false);
+    act("tag", { tagCode: tag }, (r) => `You found ${r.found}!`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playerId, code]);
+
   async function copyLink() {
     const url = `${location.origin}/?join=${code}`;
     try { await navigator.clipboard.writeText(url); setToast("Invite link copied."); }
@@ -234,7 +242,13 @@ export default function Game({ code }: { code: string }) {
           {s.me.role === "seeker" && (
             <div className="card">
               <div className="row between"><h3>Tag a hider</h3><span className="role seeker">Seeker{s.me.tags ? ` · ${s.me.tags} tagged` : ""}</span></div>
-              <p className="muted">Found someone? Enter the 4-digit code on their screen.{g.features.tagRange ? " You need to be within about 60 m." : ""}</p>
+              {scanning && <Scanner game={g.code} onTag={tagByScan} onClose={() => setScanning(false)} />}
+              {!scanning && (
+                <button className="btn ember" disabled={busy || g.phase !== "seeking"} onClick={() => setScanning(true)}>
+                  Scan their QR code
+                </button>
+              )}
+              <p className="muted">Or type the 4-digit code on their screen.{g.features.tagRange ? " You need to be within about 60 m." : ""}</p>
               <form className="row" onSubmit={async (e) => {
                 e.preventDefault();
                 if (await act("tag", { tagCode: tagInput }, (r) => `You found ${r.found}!`)) setTagInput("");
@@ -249,7 +263,8 @@ export default function Game({ code }: { code: string }) {
           {s.me.role === "hider" && !s.me.found && (
             <div className="card">
               <div className="row between"><h3>You&apos;re hiding</h3><span className="role hider">Hider</span></div>
-              <p className="muted">If a seeker finds you, show them this code.</p>
+              <p className="muted">If a seeker finds you, let them scan this code, or read them the number.</p>
+              {s.me.tagCode && <TagQR game={g.code} tag={s.me.tagCode} />}
               <div className="bigcode">{s.me.tagCode}</div>
               <Heat s={s} />
               {g.features.chirp && (!sound

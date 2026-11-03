@@ -10,9 +10,12 @@ type Data = {
   codes: { code: string; display: string; plan: keyof typeof PLANS; label: string; uses_left: number | null; expires_at: string; games_hosted: number; created_at: string; team: string | null }[];
   leads: { id: string; kind: string; plan: string | null; name: string; email: string; company: string | null; team_size: number | null; event_date: string | null; message: string | null; created_at: string }[];
   teams: { id: string; name: string; plan: keyof typeof PLANS; members: number; games: number; created_at: string }[];
-  totals: { games: number; players: number; games_week: number };
+  totals: { games: number; players: number; games_week: number; revenue_cents: number };
+  stripe: boolean;
+  orders: { session_id: string; plan: keyof typeof PLANS; email: string | null; amount_cents: number | null; display: string; subscription_id: string | null; created_at: string }[];
 };
-const TABS = ["Settings", "Access codes", "Sign-ups", "Teams"] as const;
+const TABS = ["Settings", "Orders", "Access codes", "Sign-ups", "Teams"] as const;
+const money = (c: number) => (c / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 export default function Admin() {
   const [key, setKey] = useState("");
@@ -82,6 +85,7 @@ export default function Admin() {
       {error && <div className="error" role="alert">{error}</div>}
 
       <div className="stats">
+        <div className="stat"><b>{money(data.totals.revenue_cents)}</b><small>Online sales</small></div>
         <div className="stat"><b>{data.totals.games}</b><small>Games hosted</small></div>
         <div className="stat"><b>{data.totals.games_week}</b><small>Games this week</small></div>
         <div className="stat"><b>{data.totals.players}</b><small>Players</small></div>
@@ -115,6 +119,32 @@ export default function Admin() {
             </div>
           </div>
         </div>
+      )}
+
+      {tab === "Orders" && (
+        <>
+          {!data.stripe && (
+            <div className="notice">
+              Online checkout is ready but not connected. In Vercel, add STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET to the hide-and-seek project,
+              and in Stripe add a webhook to /api/stripe/webhook for the checkout.session.completed and invoice.paid events. Then redeploy.
+            </div>
+          )}
+          <div className="tbl"><table>
+            <thead><tr><th>Date</th><th>Plan</th><th>Customer</th><th>Amount</th><th>Access code</th><th>Type</th></tr></thead>
+            <tbody>
+              {data.orders.length === 0 && <tr><td colSpan={6} className="muted">No online orders yet. Orders appear here as soon as a customer pays.</td></tr>}
+              {data.orders.map((o) => (
+                <tr key={o.session_id}>
+                  <td>{fmtDate(o.created_at)}</td><td>{PLANS[o.plan]?.name ?? o.plan}</td>
+                  <td className="small" style={{ userSelect: "all" }}>{o.email ?? "—"}</td>
+                  <td className="mono">{o.amount_cents != null ? money(o.amount_cents) : "—"}</td>
+                  <td className="mono">{o.display}</td>
+                  <td><span className="badge">{o.subscription_id ? "Monthly" : "One-off"}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table></div>
+        </>
       )}
 
       {tab === "Access codes" && (

@@ -130,4 +130,15 @@ async function migrate(sql: ReturnType<typeof postgres>) {
   await sql`ALTER TABLE hs_games ADD COLUMN IF NOT EXISTS team_id text`;
   await sql`ALTER TABLE hs_games ADD COLUMN IF NOT EXISTS host_member text`;
   await sql`ALTER TABLE hs_games ADD COLUMN IF NOT EXISTS settings jsonb NOT NULL DEFAULT '{}'::jsonb`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS hs_orders (
+      session_id text PRIMARY KEY,
+      plan text NOT NULL,
+      email text,
+      amount_cents int,
+      access_code text NOT NULL REFERENCES hs_access_codes(code),
+      subscription_id text,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`;
+  await sql`CREATE INDEX IF NOT EXISTS hs_orders_sub ON hs_orders(subscription_id)`;
 }

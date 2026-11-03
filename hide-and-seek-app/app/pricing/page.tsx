@@ -5,11 +5,21 @@ import Link from "next/link";
 import { Nav, api } from "@/components/ui";
 import type { Plan } from "@/lib/plans";
 
-type Config = { settings: { pricingPage: boolean; enquiries: boolean }; plans: Plan[] };
+type Config = { settings: { pricingPage: boolean; enquiries: boolean; checkout: boolean }; plans: Plan[] };
 
 export default function Pricing() {
   const [cfg, setCfg] = useState<Config | null>(null);
   const [chosen, setChosen] = useState<string | null>(null);
+  const [buying, setBuying] = useState<string | null>(null);
+  const [buyError, setBuyError] = useState("");
+
+  async function buy(planId: string) {
+    setBuyError(""); setBuying(planId);
+    try {
+      const r = await api<{ url: string }>("/api/checkout", { body: { plan: planId } });
+      location.href = r.url;
+    } catch (e) { setBuyError((e as Error).message); setBuying(null); }
+  }
   useEffect(() => { api<Config>("/api/config").then(setCfg).catch(() => {}); }, []);
 
   if (!cfg) return <div className="wide"><Nav current="pricing" /><p className="muted">Loading plans…</p></div>;
@@ -22,9 +32,17 @@ export default function Pricing() {
       <div className="row between"><h3>{p.name}</h3>{featured && <span className="badge ok">Most popular</span>}</div>
       <div className="price">{p.price}<small>{p.cadence}</small></div>
       <ul>{p.features.map((f) => <li key={f}>{f}</li>)}</ul>
-      <button className={`btn ${featured ? "" : "ghost"}`} onClick={() => setChosen(p.id)}>
-        {p.audience === "corporate" ? "Talk to us" : "Get early access"}
-      </button>
+      {p.id === "free" ? (
+        <Link className="btn ghost" href="/">Play free</Link>
+      ) : cfg.settings.checkout && p.cents != null ? (
+        <button className={`btn ${featured ? "" : "ghost"}`} disabled={buying !== null} onClick={() => buy(p.id)}>
+          {buying === p.id ? "Opening checkout…" : p.usage === "subscription" ? "Subscribe" : "Buy now"}
+        </button>
+      ) : (
+        <button className={`btn ${featured ? "" : "ghost"}`} onClick={() => setChosen(p.id)}>
+          {p.audience === "corporate" ? "Talk to us" : "Get early access"}
+        </button>
+      )}
     </div>
   );
 
@@ -36,7 +54,9 @@ export default function Pricing() {
         <h1>Play for free. Upgrade for bigger games.</h1>
         <p className="lede">Classic games for up to 6 players are free. Choose a plan for every game mode, bigger groups and team events.</p>
       </div>
-      {!cfg.settings.enquiries ? null : <p className="notice">Online checkout opens soon. Sign up now and we&apos;ll send your access code as soon as it&apos;s live.</p>}
+      {!cfg.settings.checkout && cfg.settings.enquiries && <p className="notice">Online checkout opens soon. Sign up now and we&apos;ll send your access code as soon as it&apos;s live.</p>}
+      {cfg.settings.checkout && <p className="muted">Secure card payment by Stripe. Your access code appears as soon as payment completes.</p>}
+      {buyError && <div className="error" role="alert">{buyError}</div>}
 
       <h2>For individuals</h2>
       <div className="plans">{by("individual").map((p) => card(p, true))}{by("free").map((p) => card(p))}</div>
