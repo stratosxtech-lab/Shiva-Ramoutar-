@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       if (mode !== "classic" && !settings[mode as SettingKey]) {
         throw new GameError(`${MODE_INFO[mode].label} is switched off. Choose another mode.`, 403);
       }
-      if (!r.plan.modes.includes(mode)) {
+      if (!r.plan.modes.includes(mode) && !(r.plan.id === "free" && global.demoModes)) {
         throw new GameError(`${MODE_INFO[mode].label} needs a paid plan. Choose Classic, or enter an access code.`, 402);
       }
       await tx`

@@ -4,6 +4,7 @@ import { db } from "./db";
 export const SETTINGS = {
   newGames: { label: "Allow new games", help: "Turn off to pause all new games, for example during maintenance.", team: false, default: true },
   freeHosting: { label: "Allow free games", help: "Let people host Classic games on the Free plan without an access code.", team: false, default: true },
+  demoModes: { label: "Unlock all modes in free games", help: "For testing and demos. Free games can use every mode without an access code.", team: false, default: false },
   pricingPage: { label: "Show pricing page", help: "Show plans and prices to visitors.", team: false, default: true },
   onlineCheckout: { label: "Online checkout", help: "Let customers buy plans by card. Needs your Stripe keys in Vercel.", team: false, default: true },
   enquiries: { label: "Accept sign-ups and corporate enquiries", help: "Collect early-access sign-ups and corporate enquiry forms.", team: false, default: true },

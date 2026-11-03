@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Scanner, TagQR } from "@/components/qr";
+import { Coach, RadarLegend, RoleReveal } from "@/components/coach";
 
 type State = {
   now: number;
@@ -197,14 +198,24 @@ export default function Game({ code }: { code: string }) {
       {locBanner && <div className="notice">{locBanner}</div>}
       {error && <div className="error" role="alert">{error}</div>}
       {toast && <div className="notice" role="status">{toast}</div>}
+      {!ended && (
+        <Coach c={{
+          status: g.status, phase: g.phase, role: s.me.role, found: s.me.found, isHost: g.isHost, players: s.players.length,
+          mode: g.mode, hidersLeft: s.hidersLeft, half: g.half, team: s.me.team,
+          secondsLeft: g.status === "live" ? ((g.phase === "hiding" ? g.hideEndsAt! : g.seekEndsAt!) - serverNow) / 1000 : 0,
+        }} />
+      )}
 
       {g.status === "lobby" && (
         <>
-          <div className="card">
+          <div className="card" style={{ textAlign: "center" }}>
             <span className="eyebrow">Game code</span>
             <div className="bigcode">{g.code}</div>
-            <button className="btn ghost" onClick={copyLink}>Copy invite link</button>
+            <p className="muted">Players tap <b>Join a game</b> and type this code.</p>
+            <button className="btn ghost" onClick={copyLink}>Copy invite link to send</button>
           </div>
+          <details className="card settings-peek">
+            <summary>{MODE_LABEL[g.mode] ?? g.mode} · {g.roundSeconds / 60} min · {s.players.length} of {g.maxPlayers} players</summary>
           <div className="kv">
             <div><b>{MODE_LABEL[g.mode] ?? g.mode}</b><small>Mode</small></div>
             <div><b>{g.roundSeconds / 60} min</b><small>Round length</small></div>
@@ -213,8 +224,9 @@ export default function Game({ code }: { code: string }) {
             <div><b>{g.plan}</b><small>Plan</small></div>
             <div><b>{s.players.length} / {g.maxPlayers}</b><small>Players</small></div>
           </div>
+          </details>
           <div className="card">
-            <div className="row between"><h3>Players ({s.players.length})</h3><span className="muted">Seeker picked at random</span></div>
+            <div className="row between"><h3>Players ({s.players.length})</h3><span className="muted">The seeker is picked at random</span></div>
             <div className="list">
               {s.players.map((p) => (
                 <div className="item" key={p.id}>
@@ -229,28 +241,31 @@ export default function Game({ code }: { code: string }) {
               <button className="btn" disabled={busy || s.players.length < 2} onClick={() => act("start", coords.current ?? {})}>
                 {s.players.length < 2 ? "Waiting for at least 1 more player" : "Start game"}
               </button>
-              <p className="muted">The play zone is centred on where you stand when you press Start.</p>
+              <p className="muted">The play zone is a circle around where you stand when you tap Start.</p>
             </>
-          ) : (
-            <p className="notice">Waiting for the host to start the game.</p>
-          )}
+          ) : null}
         </>
       )}
 
       {g.status === "live" && (
         <>
+          <RoleReveal game={g.code} role={s.me.role} half={g.half} team={s.me.team} mode={g.mode} />
           {s.teams && <TeamBar s={s} />}
-          <PhaseBanner s={s} serverNow={serverNow} />
-          {g.mode === "indoor" ? <IndoorCard s={s} serverNow={serverNow} /> : <Radar s={s} serverNow={serverNow} />}
+          {g.mode === "indoor" ? <IndoorCard s={s} serverNow={serverNow} /> : (
+            <>
+              <Radar s={s} serverNow={serverNow} />
+              <RadarLegend seeker={s.me.role === "seeker"} />
+            </>
+          )}
           {s.me.outside && <div className="error">You're outside the play zone. Head back towards the centre.</div>}
 
           {s.me.role === "seeker" && (
             <div className="card">
-              <div className="row between"><h3>Tag a hider</h3><span className="role seeker">Seeker{s.me.tags ? ` · ${s.me.tags} tagged` : ""}</span></div>
+              <div className="row between"><h3>Found someone?</h3><span className="role seeker">Seeker{s.me.tags ? ` · ${s.me.tags} found` : ""}</span></div>
               {scanning && <Scanner game={g.code} onTag={tagByScan} onClose={() => setScanning(false)} />}
               {!scanning && (
-                <button className="btn ember" disabled={busy || g.phase !== "seeking"} onClick={() => setScanning(true)}>
-                  Scan their QR code
+                <button className="btn ember big" disabled={busy || g.phase !== "seeking"} onClick={() => setScanning(true)}>
+                  {g.phase === "seeking" ? "Scan their QR code" : "Scanning opens when the hunt starts"}
                 </button>
               )}
               {s.me.canPulse && (
@@ -259,7 +274,9 @@ export default function Game({ code }: { code: string }) {
                 </button>
               )}
               {s.me.pulseActive && <p className="notice">Reveal pulse active. The warm zone shows the real hiders.</p>}
-              <p className="muted">Or type the 4-digit code on their screen.{g.features.tagRange ? " You need to be within about 60 m." : ""}</p>
+              <details>
+              <summary className="muted">Camera not working? Type their 4-digit code instead</summary>
+              <p className="muted">It&apos;s the big number under their QR code.{g.features.tagRange ? " You need to be within about 60 m of them." : ""}</p>
               <form className="row" onSubmit={async (e) => {
                 e.preventDefault();
                 if (await act("tag", { tagCode: tagInput }, (r) => `You found ${r.found}!`)) setTagInput("");
@@ -268,19 +285,20 @@ export default function Game({ code }: { code: string }) {
                   onChange={(e) => setTagInput(e.target.value.replace(/\D/g, ""))} placeholder="0000" aria-label="Hider's code" />
                 <button className="btn ember" style={{ width: "auto" }} disabled={busy || tagInput.length !== 4 || g.phase !== "seeking"}>Tag</button>
               </form>
+              </details>
             </div>
           )}
 
           {s.me.role === "hider" && !s.me.found && (
             <div className="card">
-              <div className="row between"><h3>You&apos;re hiding</h3><span className="role hider">Hider</span></div>
-              <p className="muted">If a seeker finds you, let them scan this code, or read them the number.</p>
+                            {g.features.chirp && (!sound
+                ? <button className="btn" onClick={enableSound}>Turn on chirp sound (required)</button>
+                : <p className="muted">Chirp is on. Your phone will chirp every {g.chirpEvery === 60 ? "minute" : "2 minutes"} during the hunt.</p>)}
+<div className="row between"><h3>Your QR code</h3><span className="role hider">Hider</span></div>
+              <p className="muted">Only show this if a seeker finds you. They scan it to tag you.</p>
               {s.me.tagCode && <TagQR game={g.code} tag={s.me.tagCode} />}
               <div className="bigcode">{s.me.tagCode}</div>
               {g.mode !== "indoor" && <Heat s={s} />}
-              {g.features.chirp && (!sound
-                ? <button className="btn ghost" onClick={enableSound}>Turn on chirp sound (required)</button>
-                : <p className="muted">Chirp is on. Your phone will chirp every {g.chirpEvery === 60 ? "minute" : "2 minutes"} during the hunt.</p>)}
               {g.features.decoys && g.mode !== "indoor" && (
                 <button className="btn ghost" disabled={busy || s.me.decoyUsed || g.phase !== "seeking"} onClick={() => act("decoy", {}, () => "Decoy dropped. The warm zone is pulled away from you for 60 seconds.")}>
                   {s.me.decoyActive ? "Decoy active" : s.me.decoyUsed ? "No decoys left" : `Drop decoy signal (${s.me.decoysLeft} left)`}
@@ -289,9 +307,6 @@ export default function Game({ code }: { code: string }) {
             </div>
           )}
 
-          {s.me.role === "hider" && s.me.found && (
-            <div className="card"><h3>You were found</h3><p className="muted">You&apos;re out for this round. Keep watching the scores.</p></div>
-          )}
 
           <Feed s={s} />
           {g.features.liveScores && <Scores s={s} />}
@@ -301,21 +316,6 @@ export default function Game({ code }: { code: string }) {
       {ended && <Results s={s} />}
     </>
   );
-}
-
-function PhaseBanner({ s, serverNow }: { s: State; serverNow: number }) {
-  const g = s.game;
-  if (g.phase === "hiding") {
-    const left = clock(g.hideEndsAt! - serverNow);
-    return (
-      <div className="card" style={{ background: s.me.role === "seeker" ? "rgba(255,123,92,.14)" : "rgba(244,183,64,.12)" }}>
-        <span className="eyebrow">Head start · {left}</span>
-        <h2>{s.me.role === "seeker" ? "Close your eyes and count." : "Hide now!"}</h2>
-        <p className="muted">{s.me.role === "seeker" ? "The hunt starts when the head start ends." : "Find a spot inside the play zone before time runs out."}</p>
-      </div>
-    );
-  }
-  return null;
 }
 
 function Radar({ s, serverNow }: { s: State; serverNow: number }) {

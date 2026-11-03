@@ -10,7 +10,7 @@ export async function GET() {
   return handle(async () => {
     const s = await getGlobal();
     return {
-      settings: { newGames: s.newGames, freeHosting: s.freeHosting, pricingPage: s.pricingPage, enquiries: s.enquiries, infection: s.infection, shadow: s.shadow, duel: s.duel, indoor: s.indoor,
+      settings: { newGames: s.newGames, freeHosting: s.freeHosting, pricingPage: s.pricingPage, enquiries: s.enquiries, infection: s.infection, shadow: s.shadow, duel: s.duel, indoor: s.indoor, demoModes: s.demoModes,
         checkout: s.onlineCheckout && stripeConfigured() },
       plans: Object.values(PLANS),
     };
