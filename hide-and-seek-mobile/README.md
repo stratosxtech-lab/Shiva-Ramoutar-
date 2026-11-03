@@ -1,75 +1,95 @@
-# Hide & Seek: iPhone and Android apps
+# Hide & Seek: iPhone and Android apps (Expo)
 
-These store apps wrap the live Hide & Seek web app (`hide-and-seek-app/`) using
-[Capacitor](https://capacitorjs.com). Because the apps load the live site, every update
-you deploy to Vercel reaches app users straight away. You only resubmit to the stores
-when you change the icon, name or permissions.
+This is the store app for Hide & Seek. It opens the live web app (`../hide-and-seek-app`)
+full screen and adds what a store app needs: an app icon and splash screen, location and
+camera permissions, sound, the Android back button, and an offline screen.
 
-## Before you start
+The app loads the live site, so **every update you deploy to Vercel reaches app users
+straight away**. You only need a new store build when you change the icon, name,
+permissions or the web address.
 
-| You need | Cost | Why |
-|---|---|---|
-| Apple Developer Program account | $99 a year | To publish on the App Store |
-| Google Play Console account | $25 once | To publish on Google Play |
-| A Mac with Xcode | — | Apple only allows iPhone builds on a Mac |
-| Android Studio (Mac, Windows or Linux) | Free | To build the Android app |
-| A public web address for the app | — | The apps load it, so it can't be behind Vercel's login |
-| A privacy policy page | — | Both stores require one because the app uses location and the camera |
+| Setting | Value |
+|---|---|
+| App name | Hide & Seek |
+| iOS bundle ID | `com.stratosxtech.hideandseek` |
+| Android package | `com.stratosxtech.hideandseek` |
+| Version | 1.0.0 (build numbers increase automatically) |
+| Web address it opens | `extra.siteUrl` in `app.json` |
+| Expo SDK | 58 |
 
-When the app moves to its own domain, change `server.url` in `capacitor.config.json`.
+## 1. One-time setup
 
-## One-time setup
+You need a free [Expo account](https://expo.dev/signup), plus:
+- **Apple Developer Program** ($99 a year) for the iPhone app
+- **Google Play Console** ($25 once) for the Android app
+
+No Mac, Xcode or Android Studio is needed. Expo builds both apps in the cloud.
 
 ```bash
 cd hide-and-seek-mobile
 npm install
-npm run add:ios        # creates the ios/ project (Mac only)
-npm run add:android    # creates the android/ project
+npx eas-cli@latest login      # sign in with your Expo account
+npx eas-cli@latest init       # links this folder to a new Expo project (adds its ID to app.json)
 ```
 
-### Permissions to add
+**Before your first store build**, change `extra.siteUrl` in `app.json` to the app's public
+web address. Store apps can't open the site while it's private behind Vercel's login.
 
-The game uses location (play zone, warm zone, tag range) and the camera (QR tagging).
+## 2. Build the files
 
-**iPhone:** in `ios/App/App/Info.plist` add:
+| You want | Command | You get |
+|---|---|---|
+| An **APK** to install and test on Android phones | `npm run build:android:apk` | `.apk` download link |
+| The **Google Play** file | `npm run build:android` | `.aab` app bundle |
+| The **App Store** file | `npm run build:ios` | `.ipa` (Expo asks you to sign in to Apple once and handles certificates) |
 
-```xml
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>Hide &amp; Seek uses your location during a game to keep you in the play zone and to show seekers a warm zone. It is never shown to other players.</string>
-<key>NSCameraUsageDescription</key>
-<string>Hide &amp; Seek uses the camera to scan a hider's QR code when you find them.</string>
+Each command prints a link to the build on expo.dev, where you can download the file when
+it finishes (usually 10 to 20 minutes).
+
+## 3. Submit to the stores
+
+```bash
+npm run submit:ios        # uploads the latest iPhone build to App Store Connect
+npm run submit:android    # uploads the latest Android build to Google Play
 ```
 
-**Android:** in `android/app/src/main/AndroidManifest.xml` add:
+For Google Play, the first upload must be made by hand in Play Console, and later
+uploads can use the command. Expo's submit guide explains how to add a Google service
+account key so the command can upload for you.
 
-```xml
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-<uses-permission android:name="android.permission.CAMERA" />
-```
+Then complete each store listing using **`STORE-LISTING.md`** and the graphics in **`store/`**:
+- `store/play-icon-512.png` is the Google Play icon (512 × 512)
+- `store/play-feature-graphic-1024x500.png` is the Google Play feature graphic
+- The iPhone app icon is taken from `assets/icon.png` automatically
 
-### App icon
+You'll also need **screenshots** from a real phone. Take them while playing a game, for
+example the lobby, the radar, the hider's QR code and the results podium.
 
-Use `www/icon.png` (512 × 512) as the source. In Xcode, add it to the AppIcon set.
-In Android Studio, use **New → Image Asset**.
+## What's already handled
 
-## Build and submit
+- **Permissions:** location "while using the app" and camera only. Background location,
+  microphone, storage and "draw over other apps" are switched off, which avoids extra
+  questions in store review.
+- **Permission messages:** written in plain language (see `app.json`).
+- **Encryption declaration:** set to "standard encryption only", so App Store Connect
+  doesn't ask each time.
+- **Payments on iPhone:** inside the iPhone app the Buy buttons are hidden and players are
+  told plans are available on the website. This follows Apple's rule that digital
+  purchases inside iPhone apps must use In-App Purchase. Plans bought on the website
+  appear in the app when players sign in. Android and the website are unaffected.
+- **Links to other sites** (such as card payment pages) open in the phone's browser.
 
-1. `npm run sync`
-2. **iPhone:** `npm run open:ios`, choose your team under Signing, then
-   **Product → Archive → Distribute App → App Store Connect**.
-3. **Android:** `npm run open:android`, then **Build → Generate Signed App Bundle**
-   and upload the `.aab` file in Play Console.
-4. Complete each store listing using `STORE-LISTING.md`.
+## Store review tips
 
-## Store review notes
+- **Apple's "minimum functionality" rule (4.2):** in the review notes, explain that the
+  game uses location, the camera, sound and real-time multiplayer, and needs two phones to
+  play. Give the reviewer a test access code from your owner console (`/admin`).
+- **Demo account:** create a player account for the reviewer and include the email and
+  password in the review notes.
+- **Privacy policy URL:** both stores require one. Publish it on the website first.
 
-- **Apple guideline 4.2 (minimum functionality):** apps that only show a website can be
-  rejected. Hide & Seek uses location, the camera, sound and real-time multiplayer, which
-  helps. In the review notes, explain that a game needs two phones, and give the reviewer a
-  test access code from the owner console.
-- **Payments:** Apple requires In-App Purchase for digital content bought inside an iPhone
-  app. The simplest path is to hide the Buy buttons inside the iPhone app and sell plans on
-  the website, which Apple allows. Corporate plans sold by invoice are not affected.
-- **Children:** if you market to under-13s, both stores apply extra privacy rules (COPPA in
-  the US). Have the privacy policy reviewed before you submit.
+## Changing the app later
+
+- **Web address:** edit `extra.siteUrl` in `app.json`, then build and submit again.
+- **Icon or splash:** replace the files in `assets/` (same names and sizes), then rebuild.
+- **Code check:** `npm run typecheck`.

@@ -1,0 +1,74 @@
+{
+  "expo": {
+    "name": "Hide & Seek",
+    "slug": "hide-and-seek",
+    "scheme": "hideandseek",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#121C26",
+    "primaryColor": "#F4B740",
+    "description": "Real-world hide and seek for friends, families and teams.",
+    "ios": {
+      "bundleIdentifier": "com.stratosxtech.hideandseek",
+      "buildNumber": "1",
+      "supportsTablet": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSCameraUsageDescription": "Hide & Seek uses the camera to scan a hider's QR code when you find them."
+      }
+    },
+    "android": {
+      "package": "com.stratosxtech.hideandseek",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "backgroundColor": "#121C26",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Hide & Seek uses your location during a game to keep you in the play zone and to show seekers a warm zone. It is never shown to other players.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "motionUsagePermission": false
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#121C26",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain"
+        }
+      ]
+    ],
+    "extra": {
+      "siteUrl": "https://hide-and-seek-gilt.vercel.app"
+    }
+  }
+}

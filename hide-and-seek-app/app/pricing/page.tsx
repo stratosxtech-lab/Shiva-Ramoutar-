@@ -20,13 +20,20 @@ export default function Pricing() {
       location.href = r.url;
     } catch (e) { setBuyError((e as Error).message); setBuying(null); }
   }
-  useEffect(() => { api<Config>("/api/config").then(setCfg).catch(() => {}); }, []);
+  const [iosApp, setIosApp] = useState(false);
+  useEffect(() => {
+    // Inside the iPhone app, Apple requires its own payment system for digital purchases,
+    // so plans are bought on the website instead and the Buy buttons are hidden.
+    setIosApp(/HideAndSeekApp\/[^ ]+ \(ios\)/.test(navigator.userAgent));
+    api<Config>("/api/config").then(setCfg).catch(() => {});
+  }, []);
 
   if (!cfg) return <div className="wide"><Nav current="pricing" /><p className="muted">Loading plans…</p></div>;
   if (!cfg.settings.pricingPage) {
     return <div className="wide"><Nav current="pricing" /><h1>Pricing</h1><p className="notice">Plans will be announced soon.</p></div>;
   }
   const by = (a: Plan["audience"]) => cfg.plans.filter((p) => p.audience === a);
+  const checkout = cfg.settings.checkout && !iosApp;
   const card = (p: Plan, featured = false) => (
     <div className={`plan ${featured ? "featured" : ""}`} key={p.id}>
       <div className="row between"><h3>{p.name}</h3>{featured && <span className="badge ok">Most popular</span>}</div>
@@ -34,7 +41,9 @@ export default function Pricing() {
       <ul>{p.features.map((f) => <li key={f}>{f}</li>)}</ul>
       {p.id === "free" ? (
         <Link className="btn ghost" href="/">Play free</Link>
-      ) : cfg.settings.checkout && p.cents != null ? (
+      ) : iosApp && p.audience !== "corporate" ? (
+        <p className="muted">Available on our website.</p>
+      ) : checkout && p.cents != null ? (
         <button className={`btn ${featured ? "" : "ghost"}`} disabled={buying !== null} onClick={() => buy(p.id)}>
           {buying === p.id ? "Opening checkout…" : p.usage === "subscription" ? "Subscribe" : "Buy now"}
         </button>
@@ -54,8 +63,9 @@ export default function Pricing() {
         <h1>Play for free. Upgrade for bigger games.</h1>
         <p className="lede">Classic games for up to 6 players are free. Choose a plan for every game mode, bigger groups and team events.</p>
       </div>
-      {!cfg.settings.checkout && cfg.settings.enquiries && <p className="notice">Online checkout opens soon. Sign up now and we&apos;ll send your access code as soon as it&apos;s live.</p>}
-      {cfg.settings.checkout && <p className="muted">Secure card payment by Stripe. Your access code appears as soon as payment completes.</p>}
+      {iosApp && <p className="notice">Plans can be bought on the Hide &amp; Seek website. Once bought, sign in here with the same email and your plan appears automatically.</p>}
+      {!iosApp && !cfg.settings.checkout && cfg.settings.enquiries && <p className="notice">Online checkout opens soon. Sign up now and we&apos;ll send your access code as soon as it&apos;s live.</p>}
+      {checkout && <p className="muted">Secure card payment by Stripe. Your access code appears as soon as payment completes.</p>}
       {buyError && <div className="error" role="alert">{buyError}</div>}
 
       <h2>For individuals</h2>
