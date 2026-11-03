@@ -29,12 +29,13 @@ export function Toggle({ id, label, help, checked, disabled, note, onChange }: {
   );
 }
 
-export function Nav({ current }: { current?: "play" | "pricing" | "team" | "admin" }) {
+export function Nav({ current, signedIn }: { current?: "play" | "pricing" | "team" | "admin" | "account"; signedIn?: boolean }) {
   return (
     <nav className="nav" aria-label="Main">
       <Link href="/" aria-current={current === "play" ? "page" : undefined}>Play</Link>
       <Link href="/pricing" aria-current={current === "pricing" ? "page" : undefined}>Pricing</Link>
       <Link href="/team" aria-current={current === "team" ? "page" : undefined}>Team dashboard</Link>
+      <Link href="/account" aria-current={current === "account" ? "page" : undefined}>{signedIn ? "My account" : "Sign in"}</Link>
     </nav>
   );
 }

@@ -17,7 +17,7 @@ export function formatAccess(raw: string) {
   return raw.match(/.{1,4}/g)!.join("-");
 }
 
-export async function issueCode(plan: PlanId, label: string, overrideDays?: number) {
+export async function issueCode(plan: PlanId, label: string, overrideDays?: number, owner: { email?: string | null; userId?: string | null } = {}) {
   const p = PLANS[plan];
   if (p.usage === "none") throw new GameError("The Free plan doesn't need an access code.");
   const sql = await db();
@@ -25,8 +25,10 @@ export async function issueCode(plan: PlanId, label: string, overrideDays?: numb
   for (let i = 0; i < 10; i++) {
     const raw = Array.from({ length: 12 }, () => ALPHABET[randomInt(ALPHABET.length)]).join("");
     const [row] = await sql<AccessCode[]>`
-      INSERT INTO hs_access_codes (code, plan, label, uses_left, expires_at)
-      VALUES (${raw}, ${plan}, ${label.slice(0, 80)}, ${p.usage === "single_event" ? 1 : null}, now() + ${days + " days"}::interval)
+      INSERT INTO hs_access_codes (code, plan, label, uses_left, expires_at, email, user_id)
+      VALUES (${raw}, ${plan}, ${label.slice(0, 80)}, ${p.usage === "single_event" ? 1 : null}, now() + ${days + " days"}::interval,
+              ${owner.email?.toLowerCase() ?? null},
+              ${owner.userId ?? (owner.email ? sql`(SELECT id FROM hs_users WHERE email = ${owner.email.toLowerCase()})` : null)})
       ON CONFLICT (code) DO NOTHING RETURNING *`;
     if (row) return { ...row, display: formatAccess(row.code) };
   }
@@ -88,4 +90,17 @@ export function requireAdmin(req: Request) {
   const given = req.headers.get("x-admin-key") ?? "";
   const a = Buffer.from(given), b = Buffer.from(expected);
   if (a.length !== b.length || !timingSafeEqual(a, b)) throw new GameError("That admin key is incorrect.", 401);
+}
+
+/** Emails an access code with the right next step for its plan. */
+export async function emailCode(to: string | null | undefined, display: string, planId: PlanId, origin: string) {
+  const { sendEmail } = await import("./email");
+  const plan = PLANS[planId];
+  const team = plan.audience === "group" || plan.audience === "corporate";
+  return sendEmail(to, `Your Hide & Seek ${plan.name} access code`, `Your ${plan.name} access code`,
+    team
+      ? ["Thank you for choosing Hide & Seek. Use the code below to set up your team. You'll become its super user, able to add hosts, control settings and see every game."]
+      : [`Thank you for choosing Hide & Seek. Enter the code below in the "Access or host code" box when you host a game to unlock every mode and up to ${plan.maxPlayers} players.`],
+    display,
+    team ? { label: "Set up my team", url: `${origin}/team/new?code=${encodeURIComponent(display)}` } : { label: "Host a game", url: origin });
 }

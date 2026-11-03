@@ -8,7 +8,7 @@ export default function NewTeam() {
   const [f, setF] = useState({ accessCode: "", teamName: "", ownerName: "", ownerEmail: "" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [done, setDone] = useState<{ teamId: string; adminKey: string; link: string } | null>(null);
+  const [done, setDone] = useState<{ teamId: string; adminKey: string; link: string; emailed?: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
 
@@ -20,7 +20,7 @@ export default function NewTeam() {
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setError(""); setBusy(true);
     try {
-      const r = await api<{ teamId: string; adminKey: string }>("/api/teams", { body: f });
+      const r = await api<{ teamId: string; adminKey: string; emailed: boolean }>("/api/teams", { body: f });
       try {
         localStorage.setItem(`hs:team:${r.teamId}`, r.adminKey);
         const list = JSON.parse(localStorage.getItem("hs:teams") ?? "[]");
@@ -43,7 +43,7 @@ export default function NewTeam() {
       {done ? (
         <div className="card">
           <h3>Your team is ready. You&apos;re its super user.</h3>
-          <p className="muted">This private link opens your dashboard on any device. Save it somewhere safe, such as your password manager. Anyone with this link can manage your team.</p>
+          <p className="muted">This private link opens your dashboard on any device. Save it somewhere safe, such as your password manager. Anyone with this link can manage your team.{done.emailed ? " We've also emailed it to you." : ""}</p>
           <div className="secret" style={{ userSelect: "all" }}>{done.link}</div>
           <button className="btn ghost" onClick={copy}>{copied ? "Link copied" : "Copy dashboard link"}</button>
           <Link className="btn" href={`/team/${done.teamId}`}>Open my dashboard</Link>

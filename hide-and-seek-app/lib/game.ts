@@ -2,13 +2,22 @@ import { randomUUID, randomInt } from "crypto";
 import { db } from "./db";
 import { PLANS, PlanId } from "./plans";
 
-export const MODES = ["classic", "infection"] as const;
+export const MODES = ["classic", "infection", "shadow", "duel", "indoor"] as const;
+export const MODE_INFO: Record<(typeof MODES)[number], { label: string; note: string }> = {
+  classic: { label: "Classic", note: "One seeker. Found hiders sit out." },
+  infection: { label: "Infection", note: "Found hiders join the seekers." },
+  shadow: { label: "Shadow Teams", note: "Two teams. Red hides while Blue seeks, then they swap. Highest team total wins." },
+  duel: { label: "Decoy Duel", note: "Hiders get 3 decoys. Each seeker gets one 20-second reveal that cuts through them." },
+  indoor: { label: "Indoor", note: "For homes and offices. No GPS needed: find hiders by their chirps." },
+};
 export type Mode = (typeof MODES)[number];
 
 const WORDS = ["LANTERN", "SHADOW", "MAPLE", "COMET", "FERN", "HARBOR", "EMBER", "OTTER", "BIRCH", "RAVEN", "CEDAR", "MOTH"];
 export const MIN_RADIUS = 40;
 export const TAG_RANGE_M = 60;
 export const DECOY_SECONDS = 60;
+export const decoySeconds = (g: Game) => (g.mode === "duel" ? 45 : DECOY_SECONDS);
+export const PULSE_SECONDS = 20;
 export const LOCATION_FRESH_S = 60;
 
 export type Game = {
@@ -17,7 +26,7 @@ export type Game = {
   center_lat: number | null; center_lng: number | null;
   started_at: Date | null; ended_at: Date | null;
   plan: string; max_players: number; access_code: string | null;
-  team_id: string | null; settings: Partial<Record<string, boolean>>;
+  team_id: string | null; settings: Partial<Record<string, boolean>>; half: number;
 };
 export type Player = {
   id: string; game_code: string; name: string; role: "seeker" | "hider"; tag_code: string;
@@ -25,6 +34,7 @@ export type Player = {
   found_at: Date | null; found_by: string | null; tags: number;
   decoy_lat: number | null; decoy_lng: number | null; decoy_at: Date | null;
   score: number; joined_at: Date;
+  team: string | null; decoys_left: number; pulse_used: boolean; pulse_until: Date | null;
 };
 
 export class GameError extends Error {
@@ -142,13 +152,27 @@ export async function settle(g: Game): Promise<Game> {
   const hidersLeft = players.filter((p) => p.role === "hider" && !p.found_at).length;
   if (t.phase !== "ended" && hidersLeft > 0) return g;
   const sql = await db();
+  if (g.mode === "shadow" && g.half === 1) {
+    // Half-time: bank each player's points, swap the teams' roles and restart the clock.
+    const [moved] = await sql<Game[]>`
+      UPDATE hs_games SET half = 2, started_at = now() WHERE code = ${g.code} AND status = 'live' AND half = 1 RETURNING *`;
+    if (!moved) return loadGame(g.code);
+    for (const p of players) {
+      await sql`
+        UPDATE hs_players SET score = score + ${scoreFor(g, p)}, tags = 0, found_at = NULL, found_by = NULL,
+          role = ${p.team === "blue" ? "hider" : "seeker"}, decoy_at = NULL, decoy_lat = NULL, decoy_lng = NULL, decoys_left = 1
+        WHERE id = ${p.id}`;
+    }
+    await addEvent(g.code, `Half-time. Blue team hides now, Red team seeks. ${g.head_start} seconds to hide.`);
+    return moved;
+  }
   const endedAt = t.phase === "ended" ? new Date(t.seekEndsAt!) : new Date();
   const [updated] = await sql<Game[]>`
     UPDATE hs_games SET status = 'ended', ended_at = ${endedAt}
     WHERE code = ${g.code} AND status = 'live' RETURNING *`;
   if (!updated) return loadGame(g.code);
   for (const p of players) {
-    await sql`UPDATE hs_players SET score = ${scoreFor(updated, p)} WHERE id = ${p.id}`;
+    await sql`UPDATE hs_players SET score = score + ${scoreFor(updated, p)} WHERE id = ${p.id}`;
   }
   await addEvent(g.code, hidersLeft > 0 ? `Time's up. ${hidersLeft} still hidden.` : "Every hider has been found.");
   return updated;
@@ -169,13 +193,14 @@ export async function stateFor(code: string, playerId: string) {
 
   let warmZone: null | { x: number; y: number; r: number } = null;
   let nearestSeeker: number | null = null;
+  const pulsing = !!(me.pulse_until && new Date(me.pulse_until).getTime() > now);
 
   if (g.status === "live" && g.center_lat != null) {
-    if (me.role === "seeker" && t.phase === "seeking") {
+    if (me.role === "seeker" && t.phase === "seeking" && g.mode !== "indoor") {
       const pts = players
         .filter((p) => p.role === "hider" && !p.found_at && fresh(p))
         .map((p) => {
-          const decoy = p.decoy_at && p.decoy_lat != null && now - new Date(p.decoy_at).getTime() < DECOY_SECONDS * 1000;
+          const decoy = !pulsing && p.decoy_at && p.decoy_lat != null && now - new Date(p.decoy_at).getTime() < decoySeconds(g) * 1000;
           return decoy ? relative(g, p.decoy_lat!, p.decoy_lng!) : relative(g, p.lat!, p.lng!);
         });
       if (pts.length) {
@@ -186,11 +211,11 @@ export async function stateFor(code: string, playerId: string) {
         const bucket = Math.floor(t.seekElapsed / 30);
         const seed = [...(g.code + bucket)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
         const angle = (seed % 360) * (Math.PI / 180);
-        const off = r * 0.45 * ((seed % 100) / 100);
+        const off = r * (pulsing ? 0.15 : 0.45) * ((seed % 100) / 100);
         warmZone = { x: Math.round(cx + Math.cos(angle) * off), y: Math.round(cy + Math.sin(angle) * off), r };
       }
     }
-    if (me.role === "hider" && !me.found_at && fresh(me)) {
+    if (me.role === "hider" && !me.found_at && fresh(me) && g.mode !== "indoor") {
       for (const s of players.filter((p) => p.role === "seeker" && fresh(p))) {
         const d = distance(me.lat!, me.lng!, s.lat!, s.lng!);
         if (nearestSeeker == null || d < nearestSeeker) nearestSeeker = Math.round(d);
@@ -199,7 +224,11 @@ export async function stateFor(code: string, playerId: string) {
   }
 
   const myPos = me.lat != null && g.center_lat != null ? relative(g, me.lat, me.lng!) : null;
-  const decoyActive = !!(me.decoy_at && now - new Date(me.decoy_at).getTime() < DECOY_SECONDS * 1000);
+  const decoyActive = !!(me.decoy_at && now - new Date(me.decoy_at).getTime() < decoySeconds(g) * 1000);
+  const live = (p: Player) => (g.status === "ended" ? p.score : p.score + scoreFor(g, p, now));
+  const teams = g.mode === "shadow"
+    ? (["red", "blue"] as const).map((team) => ({ team, score: players.filter((p) => p.team === team).reduce((s, p) => s + live(p), 0) }))
+    : null;
 
   return {
     now,
@@ -209,25 +238,28 @@ export async function stateFor(code: string, playerId: string) {
       isHost: g.host_id === me.id, plan: PLANS[(g.plan in PLANS ? g.plan : "free") as PlanId].name, maxPlayers: g.max_players,
       features: {
         decoys: g.settings?.decoys !== false, chirp: g.settings?.chirp !== false,
-        liveScores: g.settings?.liveScores !== false, tagRange: g.settings?.tagRange !== false,
+        liveScores: g.settings?.liveScores !== false, tagRange: g.settings?.tagRange !== false && g.mode !== "indoor",
       },
+      half: g.half, chirpEvery: g.mode === "indoor" ? 60 : 120,
       ...t, warmRadius: t.phase === "seeking" ? warmRadius(g, t.progress) : g.radius_m,
     },
     me: {
       id: me.id, name: me.name, role: me.role, tagCode: me.role === "hider" && !me.found_at ? me.tag_code : null,
       found: !!me.found_at, tags: me.tags, pos: myPos,
       outside: myPos ? Math.hypot(myPos.x, myPos.y) > g.radius_m : false,
-      decoyUsed: !!me.decoy_at, decoyActive, nearestSeeker,
+      decoyUsed: me.decoys_left <= 0, decoysLeft: me.decoys_left, decoyActive, nearestSeeker, team: me.team,
+      canPulse: g.mode === "duel" && me.role === "seeker" && !me.pulse_used, pulseActive: pulsing,
     },
     players: players.map((p) => ({
       id: p.id, name: p.name, role: p.role, isHost: p.id === g.host_id, found: !!p.found_at,
-      wasHider: p.role === "hider" || !!p.found_at, tags: p.tags,
-      score: g.status === "ended" ? p.score : scoreFor(g, p, now),
+      wasHider: p.role === "hider" || !!p.found_at, tags: p.tags, team: p.team,
+      score: live(p),
       hiddenSeconds: t.hideEndsAt && (p.role === "hider" || p.found_at)
         ? Math.floor(((p.found_at ? new Date(p.found_at).getTime() : Math.min(now, g.ended_at ? new Date(g.ended_at).getTime() : t.seekEndsAt!)) - t.hideEndsAt) / 1000)
         : null,
     })),
     warmZone,
+    teams,
     hidersLeft: players.filter((p) => p.role === "hider" && !p.found_at).length,
     events: events.map((e) => ({ id: String(e.id), at: new Date(e.at).getTime(), text: e.text })),
   };

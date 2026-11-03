@@ -3,6 +3,7 @@
 import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Nav, Toggle, api, fmtDate } from "@/components/ui";
+import { ReportView, type ReportData } from "@/components/report";
 
 type Member = { id: string; name: string; email: string; role: "owner" | "admin" | "host"; host_code: string; active: boolean; games: number };
 type Overview = {
@@ -17,12 +18,16 @@ type Overview = {
 const TEAM_SETTINGS: { key: string; label: string; help: string }[] = [
   { key: "membersHost", label: "Members can host games", help: "When off, only you and team admins can host." },
   { key: "infection", label: "Infection mode", help: "Found hiders join the seekers." },
+  { key: "shadow", label: "Shadow Teams mode", help: "Two teams take turns hiding and seeking." },
+  { key: "duel", label: "Decoy Duel mode", help: "Three decoys per hider and one reveal pulse per seeker." },
+  { key: "indoor", label: "Indoor mode", help: "No GPS. Players find hiders by their chirps." },
   { key: "decoys", label: "Decoy signals", help: "Each hider can drop one decoy per round." },
   { key: "chirp", label: "Chirp sound", help: "Hiders' phones chirp every 2 minutes." },
   { key: "tagRange", label: "60 m tag range check", help: "Seekers must be close to tag. Turn off for indoor play where GPS is weak." },
   { key: "liveScores", label: "Live scores during games", help: "Players see the scoreboard while playing." },
 ];
-const TABS = ["Members", "Settings", "Games", "Plan"] as const;
+const TABS = ["Members", "Report", "Settings", "Games", "Plan"] as const;
+const MODE_LABEL: Record<string, string> = { classic: "Classic", infection: "Infection", shadow: "Shadow Teams", duel: "Decoy Duel", indoor: "Indoor" };
 
 export default function TeamDashboard({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -150,6 +155,8 @@ export default function TeamDashboard({ params }: { params: Promise<{ id: string
         </>
       )}
 
+      {tab === "Report" && key && <ReportPanel id={id} teamKey={key} />}
+
       {tab === "Settings" && (
         <div className="card" style={{ maxWidth: 680 }}>
           <h3>Team settings</h3>
@@ -171,7 +178,7 @@ export default function TeamDashboard({ params }: { params: Promise<{ id: string
             {d.games.map((g) => (
               <tr key={g.code}>
                 <td>{fmtDate(g.created_at)}</td><td className="mono">{g.code}</td><td>{g.host ?? "Owner"}</td>
-                <td>{g.mode === "infection" ? "Infection" : "Classic"}</td><td className="mono">{g.players}</td>
+                <td>{MODE_LABEL[g.mode] ?? g.mode}</td><td className="mono">{g.players}</td>
                 <td>{g.winner ?? "—"}</td>
                 <td><span className={`badge ${g.status === "ended" ? "" : "ok"}`}>{g.status === "ended" ? "Finished" : g.status === "live" ? "Live" : "Lobby"}</span></td>
               </tr>
@@ -204,5 +211,45 @@ function RemoveButton({ name, onConfirm }: { name: string; onConfirm: () => void
       <button className="btn ember sm" onClick={() => { setAsk(false); onConfirm(); }}>Remove {name}</button>
       <button className="btn ghost sm" onClick={() => setAsk(false)}>Cancel</button>
     </span>
+  );
+}
+
+function ReportPanel({ id, teamKey }: { id: string; teamKey: string }) {
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [r, setR] = useState<ReportData | null>(null);
+  const [error, setError] = useState("");
+  const q = new URLSearchParams({ ...(from ? { from } : {}), ...(to ? { to } : {}) }).toString();
+
+  useEffect(() => {
+    api<ReportData>(`/api/teams/${id}/report${q ? `?${q}` : ""}`, { headers: { "x-team-key": teamKey } }).then(setR).catch((e) => setError(e.message));
+  }, [id, teamKey, q]);
+
+  async function download() {
+    setError("");
+    try {
+      const res = await fetch(`/api/teams/${id}/report?format=csv${q ? `&${q}` : ""}`, { headers: { "x-team-key": teamKey } });
+      if (!res.ok) throw new Error("The report couldn't be downloaded. Try again.");
+      const url = URL.createObjectURL(await res.blob());
+      const a = Object.assign(document.createElement("a"), { href: url, download: "hide-and-seek-report.csv" });
+      a.click(); URL.revokeObjectURL(url);
+    } catch (e) { setError((e as Error).message); }
+  }
+
+  return (
+    <>
+      <div className="card">
+        <h3>Leadership report</h3>
+        <p className="muted">Engagement across your team&apos;s games. Choose a period, then download a spreadsheet or open a printable version to save as PDF.</p>
+        <div className="inline">
+          <label>From<input id="r-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
+          <label>To<input id="r-to" type="date" value={to} onChange={(e) => setTo(e.target.value)} /></label>
+          <button className="btn ghost" type="button" onClick={download}>Download spreadsheet</button>
+          <a className="btn" href={`/team/${id}/report${q ? `?${q}` : ""}`} target="_blank" rel="noreferrer">Printable report</a>
+        </div>
+      </div>
+      {error && <p className="error">{error}</p>}
+      {r ? <ReportView r={r} /> : !error && <p className="muted">Building your report…</p>}
+    </>
   );
 }

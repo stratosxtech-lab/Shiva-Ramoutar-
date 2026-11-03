@@ -87,9 +87,11 @@ export async function addMember(t: Team, input: { name: unknown; email: unknown;
   const sql = await db();
   const [{ n }] = await sql<{ n: number }[]>`SELECT count(*)::int AS n FROM hs_team_members WHERE team_id = ${t.id}`;
   if (n >= 200) throw new GameError("Teams can have up to 200 members. Contact us for larger organisations.");
+  const code = hostCode();
   await sql`
     INSERT INTO hs_team_members (id, team_id, name, email, role, host_code)
-    VALUES (${randomBytes(8).toString("hex")}, ${t.id}, ${name}, ${email}, ${role}, ${hostCode()})`;
+    VALUES (${randomBytes(8).toString("hex")}, ${t.id}, ${name}, ${email}, ${role}, ${code})`;
+  return { name, email, role, hostCode: formatAccess(code) };
 }
 
 export async function updateMember(t: Team, memberId: string, input: { role?: unknown; active?: unknown; remove?: unknown }) {

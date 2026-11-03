@@ -7,18 +7,20 @@ import { Scanner, TagQR } from "@/components/qr";
 type State = {
   now: number;
   game: {
-    code: string; mode: "classic" | "infection"; status: "lobby" | "live" | "ended"; radiusM: number;
+    code: string; mode: "classic" | "infection" | "shadow" | "duel" | "indoor"; status: "lobby" | "live" | "ended"; radiusM: number;
     roundSeconds: number; headStart: number; hasCenter: boolean; isHost: boolean;
     phase: "lobby" | "hiding" | "seeking" | "ended"; hideEndsAt: number | null; seekEndsAt: number | null;
-    seekElapsed: number; progress: number; warmRadius: number; plan: string; maxPlayers: number;
+    seekElapsed: number; progress: number; warmRadius: number; plan: string; maxPlayers: number; half: number; chirpEvery: number;
     features: { decoys: boolean; chirp: boolean; liveScores: boolean; tagRange: boolean };
   };
   me: {
     id: string; name: string; role: "seeker" | "hider"; tagCode: string | null; found: boolean; tags: number;
     pos: { x: number; y: number } | null; outside: boolean; decoyUsed: boolean; decoyActive: boolean; nearestSeeker: number | null;
+    decoysLeft: number; team: "red" | "blue" | null; canPulse: boolean; pulseActive: boolean;
   };
-  players: { id: string; name: string; role: "seeker" | "hider"; isHost: boolean; found: boolean; wasHider: boolean; tags: number; score: number; hiddenSeconds: number | null }[];
+  players: { id: string; name: string; role: "seeker" | "hider"; isHost: boolean; found: boolean; wasHider: boolean; tags: number; score: number; hiddenSeconds: number | null; team: "red" | "blue" | null }[];
   warmZone: { x: number; y: number; r: number } | null;
+  teams: { team: "red" | "blue"; score: number }[] | null;
   hidersLeft: number;
   events: { id: string; at: number; text: string }[];
 };
@@ -30,7 +32,8 @@ const clock = (ms: number) => {
   const s = Math.max(0, Math.ceil(ms / 1000));
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 };
-const CHIRP_EVERY = 120;
+const MODE_LABEL: Record<string, string> = { classic: "Classic", infection: "Infection", shadow: "Shadow Teams", duel: "Decoy Duel", indoor: "Indoor" };
+const TEAM_COLOR = { red: "#FF7B5C", blue: "#8EC5FF" } as const;
 
 async function post(url: string, data: unknown) {
   const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) });
@@ -89,10 +92,11 @@ export default function Game({ code }: { code: string }) {
   }, [playerId, refresh]);
 
   const ended = s?.game.status === "ended";
+  const indoor = s?.game.mode === "indoor";
 
   // Share location while the game is open. Sent every 5 seconds at most.
   useEffect(() => {
-    if (!playerId || ended) return;
+    if (!playerId || ended || indoor) return;
     if (!("geolocation" in navigator)) { setLoc("unsupported"); return; }
     const id = navigator.geolocation.watchPosition(
       (p) => {
@@ -107,14 +111,14 @@ export default function Game({ code }: { code: string }) {
       { enableHighAccuracy: true, maximumAge: 3000, timeout: 20000 },
     );
     return () => navigator.geolocation.clearWatch(id);
-  }, [playerId, code, ended]);
+  }, [playerId, code, ended, indoor]);
 
   // Hiders' phones chirp every two minutes during the hunt.
   const seekElapsed = s && s.game.hideEndsAt ? Math.max(0, (now + offset.current - s.game.hideEndsAt) / 1000) : 0;
   const amHiding = s?.game.phase === "seeking" && s.me.role === "hider" && !s.me.found;
   useEffect(() => {
     if (!amHiding || !sound || !s?.game.features.chirp) return;
-    const bucket = Math.floor(seekElapsed / CHIRP_EVERY);
+    const bucket = Math.floor(seekElapsed / (s?.game.chirpEvery ?? 120));
     if (bucket > 0 && bucket !== lastChirp.current) { lastChirp.current = bucket; chirp(); }
     if (lastChirp.current === -1) lastChirp.current = bucket;
   });
@@ -202,7 +206,7 @@ export default function Game({ code }: { code: string }) {
             <button className="btn ghost" onClick={copyLink}>Copy invite link</button>
           </div>
           <div className="kv">
-            <div><b>{g.mode === "infection" ? "Infection" : "Classic"}</b><small>Mode</small></div>
+            <div><b>{MODE_LABEL[g.mode] ?? g.mode}</b><small>Mode</small></div>
             <div><b>{g.roundSeconds / 60} min</b><small>Round length</small></div>
             <div><b>{g.headStart} s</b><small>Head start</small></div>
             <div><b>{g.radiusM} m</b><small>Zone radius</small></div>
@@ -235,8 +239,9 @@ export default function Game({ code }: { code: string }) {
 
       {g.status === "live" && (
         <>
+          {s.teams && <TeamBar s={s} />}
           <PhaseBanner s={s} serverNow={serverNow} />
-          <Radar s={s} serverNow={serverNow} />
+          {g.mode === "indoor" ? <IndoorCard s={s} serverNow={serverNow} /> : <Radar s={s} serverNow={serverNow} />}
           {s.me.outside && <div className="error">You're outside the play zone. Head back towards the centre.</div>}
 
           {s.me.role === "seeker" && (
@@ -248,6 +253,12 @@ export default function Game({ code }: { code: string }) {
                   Scan their QR code
                 </button>
               )}
+              {s.me.canPulse && (
+                <button className="btn ghost" disabled={busy || g.phase !== "seeking"} onClick={() => act("pulse", {}, () => "Reveal pulse on. Decoys can't fool you for 20 seconds.")}>
+                  Call reveal pulse (once per round)
+                </button>
+              )}
+              {s.me.pulseActive && <p className="notice">Reveal pulse active. The warm zone shows the real hiders.</p>}
               <p className="muted">Or type the 4-digit code on their screen.{g.features.tagRange ? " You need to be within about 60 m." : ""}</p>
               <form className="row" onSubmit={async (e) => {
                 e.preventDefault();
@@ -266,13 +277,13 @@ export default function Game({ code }: { code: string }) {
               <p className="muted">If a seeker finds you, let them scan this code, or read them the number.</p>
               {s.me.tagCode && <TagQR game={g.code} tag={s.me.tagCode} />}
               <div className="bigcode">{s.me.tagCode}</div>
-              <Heat s={s} />
+              {g.mode !== "indoor" && <Heat s={s} />}
               {g.features.chirp && (!sound
                 ? <button className="btn ghost" onClick={enableSound}>Turn on chirp sound (required)</button>
-                : <p className="muted">Chirp is on. Your phone will chirp every 2 minutes during the hunt.</p>)}
-              {g.features.decoys && (
+                : <p className="muted">Chirp is on. Your phone will chirp every {g.chirpEvery === 60 ? "minute" : "2 minutes"} during the hunt.</p>)}
+              {g.features.decoys && g.mode !== "indoor" && (
                 <button className="btn ghost" disabled={busy || s.me.decoyUsed || g.phase !== "seeking"} onClick={() => act("decoy", {}, () => "Decoy dropped. The warm zone is pulled away from you for 60 seconds.")}>
-                  {s.me.decoyActive ? "Decoy active" : s.me.decoyUsed ? "Decoy used" : "Drop decoy signal (1 per round)"}
+                  {s.me.decoyActive ? "Decoy active" : s.me.decoyUsed ? "No decoys left" : `Drop decoy signal (${s.me.decoysLeft} left)`}
                 </button>
               )}
             </div>
@@ -388,6 +399,7 @@ function Scores({ s }: { s: State }) {
               {p.name}{p.id === s.me.id ? " (you)" : ""}
             </span>
             <span className="row">
+              {p.team && <span className="dot" style={{ background: TEAM_COLOR[p.team] }} aria-label={`${p.team} team`} />}
               <span className={`role ${p.found && p.role === "hider" ? "out" : p.role}`}>{p.found && p.role === "hider" ? "Found" : p.role}</span>
               <span className="num">{p.score}</span>
             </span>
@@ -402,12 +414,16 @@ function Results({ s }: { s: State }) {
   const rows = [...s.players].sort((a, b) => b.score - a.score);
   const [first, second, third] = rows;
   const winner = first;
+  const teamWin = s.teams ? [...s.teams].sort((a, b) => b.score - a.score) : null;
   const describe = (p: State["players"][number]) =>
     p.tags ? `${p.tags} tag${p.tags > 1 ? "s" : ""}` : p.hiddenSeconds != null ? `hid ${clock(Math.max(0, p.hiddenSeconds) * 1000)}` : "";
   return (
     <>
       <span className="eyebrow">Round complete</span>
-      <h2>{winner ? `${winner.name} wins with ${winner.score} points` : "Round complete"}</h2>
+      <h2>{teamWin
+        ? teamWin[0].score === teamWin[1].score ? `It's a draw at ${teamWin[0].score} points each` : `${teamWin[0].team === "red" ? "Red" : "Blue"} team wins, ${teamWin[0].score} to ${teamWin[1].score}`
+        : winner ? `${winner.name} wins with ${winner.score} points` : "Round complete"}</h2>
+      {teamWin && <TeamBar s={s} />}
       <div className="podium">
         {[second, first, third].map((p, i) => p ? (
           <div className={`p ${i === 1 ? "first" : ""}`} key={p.id}>
@@ -432,5 +448,45 @@ function Results({ s }: { s: State }) {
       <Feed s={s} />
       <Link className="btn" href="/">Host a new game</Link>
     </>
+  );
+}
+
+function TeamBar({ s }: { s: State }) {
+  const t = s.teams!;
+  const live = s.game.status === "live";
+  return (
+    <div className="card" style={{ gap: 8 }}>
+      {live && (
+        <div className="row between">
+          <span className="eyebrow">Half {s.game.half} of 2</span>
+          {s.me.team && <span className="role" style={{ background: "var(--dusk-3)", color: TEAM_COLOR[s.me.team] }}>You&apos;re on {s.me.team} team</span>}
+        </div>
+      )}
+      <div className="grid2">
+        {t.map((x) => (
+          <div key={x.team} style={{ background: "var(--dusk)", borderRadius: 12, padding: "9px 10px", borderLeft: `4px solid ${TEAM_COLOR[x.team]}` }}>
+            <b className="num" style={{ fontSize: 20 }}>{x.score}</b>
+            <small className="muted" style={{ display: "block" }}>{x.team === "red" ? "Red" : "Blue"} team{live ? (s.game.half === 1 ? (x.team === "red" ? " · hiding" : " · seeking") : (x.team === "blue" ? " · hiding" : " · seeking")) : ""}</small>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function IndoorCard({ s, serverNow }: { s: State; serverNow: number }) {
+  const g = s.game;
+  const left = (g.phase === "hiding" ? g.hideEndsAt! : g.seekEndsAt!) - serverNow;
+  const nextChirp = g.chirpEvery - (Math.max(0, (serverNow - (g.hideEndsAt ?? serverNow)) / 1000) % g.chirpEvery);
+  return (
+    <div className="card" style={{ alignItems: "center", textAlign: "center", background: "var(--grass)" }}>
+      <span className="eyebrow">Indoor · no GPS</span>
+      <div className="bigcode" style={{ color: "var(--mist)" }}>{clock(left)}</div>
+      <div className="row" style={{ justifyContent: "center", flexWrap: "wrap" }}>
+        <span className="pill">{s.hidersLeft} hiding</span>
+        {g.phase === "seeking" && <span className="pill">Next chirp in {clock(nextChirp * 1000)}</span>}
+      </div>
+      <p className="muted">{s.me.role === "seeker" ? "Listen carefully. Every hider's phone chirps on the same beat." : "Stay quiet. Your phone will chirp on the beat, so pick your spot well."}</p>
+    </div>
   );
 }

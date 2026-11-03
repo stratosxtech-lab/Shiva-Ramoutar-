@@ -1,0 +1,21 @@
+{
+  "name": "hide-and-seek-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "iPhone and Android store apps for Hide & Seek. Wraps the live web app with Capacitor.",
+  "scripts": {
+    "add:ios": "cap add ios",
+    "add:android": "cap add android",
+    "sync": "cap sync",
+    "open:ios": "cap open ios",
+    "open:android": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "7.4.2",
+    "@capacitor/core": "7.4.2",
+    "@capacitor/ios": "7.4.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "7.4.2"
+  }
+}

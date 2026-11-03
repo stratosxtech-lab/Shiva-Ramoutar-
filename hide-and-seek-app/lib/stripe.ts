@@ -1,7 +1,8 @@
 import { createHmac, timingSafeEqual } from "crypto";
 import { db } from "./db";
 import { GameError } from "./game";
-import { formatAccess, issueCode } from "./access";
+import { emailCode, formatAccess, issueCode } from "./access";
+import { siteUrl } from "./email";
 import { PLANS, PlanId, isPlanId } from "./plans";
 
 /** Stripe is used through its REST API so the app needs no extra SDK. */
@@ -32,10 +33,10 @@ async function stripe<T>(method: "GET" | "POST", path: string, params?: Record<s
 type Session = {
   id: string; url?: string; status?: string; payment_status: string; mode: string;
   amount_total: number | null; subscription: string | null;
-  metadata: Record<string, string>; customer_details?: { email?: string | null } | null;
+  metadata: Record<string, string>; customer_details?: { email?: string | null } | null; client_reference_id?: string | null;
 };
 
-export async function createCheckout(planId: unknown, origin: string) {
+export async function createCheckout(planId: unknown, origin: string, user?: { id: string; email: string } | null) {
   if (!isPlanId(planId)) throw new GameError("Choose a plan to buy.");
   const plan = PLANS[planId];
   if (plan.cents == null) throw new GameError("This plan is sold by quote. Use the enquiry form and we'll be in touch.");
@@ -50,6 +51,8 @@ export async function createCheckout(planId: unknown, origin: string) {
     "metadata[plan]": plan.id,
     "subscription_data[metadata][plan]": subscription ? plan.id : undefined,
     allow_promotion_codes: true,
+    client_reference_id: user?.id,
+    customer_email: user?.email,
     billing_address_collection: plan.audience === "corporate" ? "required" : "auto",
     success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/pricing`,
@@ -67,7 +70,7 @@ export async function fulfil(session: Session) {
   const planId = session.metadata?.plan;
   if (!isPlanId(planId) || PLANS[planId].cents == null) throw new GameError("This checkout isn't for a Hide & Seek plan.", 400);
   const email = session.customer_details?.email ?? null;
-  const issued = await issueCode(planId, `Stripe ${email ?? session.id}`);
+  const issued = await issueCode(planId, `Stripe ${email ?? session.id}`, undefined, { email, userId: session.client_reference_id ?? null });
   const [row] = await sql<{ access_code: string }[]>`
     INSERT INTO hs_orders (session_id, plan, email, amount_cents, access_code, subscription_id)
     VALUES (${session.id}, ${planId}, ${email}, ${session.amount_total}, ${issued.code}, ${session.subscription})
@@ -78,6 +81,7 @@ export async function fulfil(session: Session) {
     const [o] = await sql<{ access_code: string }[]>`SELECT access_code FROM hs_orders WHERE session_id = ${session.id}`;
     return { plan: PLANS[planId], code: formatAccess(o.access_code) };
   }
+  await emailCode(email, issued.display, planId, siteUrl());
   return { plan: PLANS[planId], code: issued.display };
 }
 

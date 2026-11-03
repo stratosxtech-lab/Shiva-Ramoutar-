@@ -141,4 +141,44 @@ async function migrate(sql: ReturnType<typeof postgres>) {
       created_at timestamptz NOT NULL DEFAULT now()
     )`;
   await sql`CREATE INDEX IF NOT EXISTS hs_orders_sub ON hs_orders(subscription_id)`;
+  // Player accounts
+  await sql`
+    CREATE TABLE IF NOT EXISTS hs_users (
+      id text PRIMARY KEY,
+      email text NOT NULL UNIQUE,
+      name text NOT NULL,
+      password_hash text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS hs_sessions (
+      token_hash text PRIMARY KEY,
+      user_id text NOT NULL REFERENCES hs_users(id) ON DELETE CASCADE,
+      expires_at timestamptz NOT NULL
+    )`;
+  await sql`
+    CREATE TABLE IF NOT EXISTS hs_password_resets (
+      token_hash text PRIMARY KEY,
+      user_id text NOT NULL REFERENCES hs_users(id) ON DELETE CASCADE,
+      expires_at timestamptz NOT NULL
+    )`;
+  await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS user_id text`;
+  await sql`CREATE INDEX IF NOT EXISTS hs_players_user ON hs_players(user_id)`;
+  await sql`ALTER TABLE hs_access_codes ADD COLUMN IF NOT EXISTS user_id text`;
+  await sql`ALTER TABLE hs_access_codes ADD COLUMN IF NOT EXISTS email text`;
+  // Game modes
+  await sql`ALTER TABLE hs_games ADD COLUMN IF NOT EXISTS half int NOT NULL DEFAULT 1`;
+  await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS team text`;
+  await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS decoys_left int NOT NULL DEFAULT 1`;
+  await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS pulse_used boolean NOT NULL DEFAULT false`;
+  await sql`ALTER TABLE hs_players ADD COLUMN IF NOT EXISTS pulse_until timestamptz`;
+  // Email log, so the owner can see what was sent
+  await sql`
+    CREATE TABLE IF NOT EXISTS hs_emails (
+      id bigserial PRIMARY KEY,
+      to_email text NOT NULL,
+      subject text NOT NULL,
+      status text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )`;
 }

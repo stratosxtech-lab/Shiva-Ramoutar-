@@ -4,12 +4,18 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Nav } from "@/components/ui";
+import { InstallPrompt } from "@/components/pwa";
 
 const MODES = [
   { id: "classic", label: "Classic", note: "One seeker. Found hiders sit out." },
   { id: "infection", label: "Infection", note: "Found hiders join the seekers." },
+  { id: "shadow", label: "Shadow Teams", note: "Two teams. Red hides while Blue seeks, then they swap. Needs 4 or more players." },
+  { id: "duel", label: "Decoy Duel", note: "Hiders get 3 decoys. Each seeker gets one 20-second reveal that cuts through them." },
+  { id: "indoor", label: "Indoor", note: "For homes and offices. No GPS needed: find hiders by their chirps." },
 ];
-const SOON = ["Shadow Teams", "Decoy Duel", "Indoor"];
+
+type Config = { newGames: boolean; freeHosting: boolean } & Record<string, boolean>;
+type Me = { user: { name: string } | null; plans?: { code: string; name: string; maxPlayers: number; usable: boolean; team: string | null }[] };
 
 async function post(url: string, data: unknown) {
   const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) });
@@ -30,14 +36,21 @@ export default function Home() {
   const [error, setError] = useState("");
   const [access, setAccess] = useState("");
   const [accessInfo, setAccessInfo] = useState<{ valid: boolean; plan?: string; message: string } | null>(null);
-  const [cfg, setCfg] = useState<{ newGames: boolean; freeHosting: boolean; infection: boolean } | null>(null);
+  const [cfg, setCfg] = useState<Config | null>(null);
+  const [me, setMe] = useState<Me | null>(null);
 
   useEffect(() => {
-    try { setName(localStorage.getItem("hs:name") ?? ""); } catch {}
+    let saved = "";
+    try { saved = localStorage.getItem("hs:name") ?? ""; } catch {}
+    setName(saved);
     const c = new URLSearchParams(location.search).get("join");
     if (c) setCode(c.toUpperCase());
     try { setAccess(localStorage.getItem("hs:access") ?? ""); } catch {}
     fetch("/api/config").then((r) => r.json()).then((j) => setCfg(j.settings)).catch(() => {});
+    fetch("/api/me", { cache: "no-store" }).then((r) => r.json()).then((j: Me) => {
+      setMe(j);
+      if (j.user && !saved) setName(j.user.name);
+    }).catch(() => {});
   }, []);
 
   // Check the access or host code as it's typed, so the host sees which plan it unlocks.
@@ -51,7 +64,7 @@ export default function Home() {
   }, [access]);
 
   const paid = !!accessInfo?.valid;
-  useEffect(() => { if (!paid && mode === "infection") setMode("classic"); }, [paid, mode]);
+  useEffect(() => { if (!paid && mode !== "classic") setMode("classic"); }, [paid, mode]);
 
   async function go(kind: "host" | "join") {
     setError("");
@@ -71,14 +84,21 @@ export default function Home() {
     }
   }
 
+  const usablePlans = me?.plans?.filter((p) => p.usable) ?? [];
+  const modes = MODES.filter((m) => m.id === "classic" || cfg?.[m.id] !== false);
+
   return (
     <>
-      <Nav current="play" />
+      <Nav current="play" signedIn={!!me?.user} />
       <div className="row between">
         <h1>Hide <span>&amp;</span> Seek</h1>
       </div>
+      <InstallPrompt />
       {cfg && !cfg.newGames && <div className="notice">New games are paused for maintenance. Games already running carry on.</div>}
-      <p className="muted">Real-world hide and seek. Everyone plays on their own phone, in the same park, office or campus.</p>
+      <p className="muted">
+        Real-world hide and seek. Everyone plays on their own phone, in the same park, office or campus.
+        {me && !me.user && <> <Link href="/account">Sign in</Link> to keep your scores and plans.</>}
+      </p>
 
       <label>Your name
         <input id="name" value={name} onChange={(e) => setName(e.target.value)} maxLength={24} placeholder="e.g. Shiva" autoComplete="nickname" />
@@ -95,8 +115,8 @@ export default function Home() {
       <div className="card">
         <h3>Host a game</h3>
         <div className="chips" role="group" aria-label="Mode">
-          {MODES.filter((m) => m.id !== "infection" || cfg?.infection !== false).map((m) => {
-            const locked = m.id === "infection" && !paid;
+          {modes.map((m) => {
+            const locked = m.id !== "classic" && !paid;
             return (
               <button key={m.id} className="chip" aria-pressed={mode === m.id} disabled={locked}
                 title={locked ? "Needs a paid plan" : undefined} onClick={() => setMode(m.id)}>
@@ -104,11 +124,10 @@ export default function Home() {
               </button>
             );
           })}
-          {SOON.map((s) => <button key={s} className="chip" disabled title="Coming soon">{s} · soon</button>)}
         </div>
         <p className="muted">{MODES.find((m) => m.id === mode)?.note}</p>
         <div className="grid2">
-          <label>Round length
+          <label>{mode === "shadow" ? "Total length (two halves)" : "Round length"}
             <select id="minutes" value={minutes} onChange={(e) => setMinutes(+e.target.value)}>
               {[5, 10, 15, 20, 30].map((m) => <option key={m} value={m}>{m} minutes</option>)}
             </select>
@@ -119,13 +138,23 @@ export default function Home() {
             </select>
           </label>
         </div>
-        <label>Play zone size
-          <select id="radius" value={radius} onChange={(e) => setRadius(+e.target.value)}>
-            <option value={75}>Small: 75 m radius (garden, office floor)</option>
-            <option value={200}>Medium: 200 m radius (park)</option>
-            <option value={400}>Large: 400 m radius (campus)</option>
-          </select>
-        </label>
+        {mode !== "indoor" && (
+          <label>Play zone size
+            <select id="radius" value={radius} onChange={(e) => setRadius(+e.target.value)}>
+              <option value={75}>Small: 75 m radius (garden, office floor)</option>
+              <option value={200}>Medium: 200 m radius (park)</option>
+              <option value={400}>Large: 400 m radius (campus)</option>
+            </select>
+          </label>
+        )}
+        {usablePlans.length > 0 && (
+          <label>Use a plan from your account
+            <select id="my-plan" value={usablePlans.some((p) => p.code === access) ? access : ""} onChange={(e) => setAccess(e.target.value)}>
+              <option value="">Free (no plan)</option>
+              {usablePlans.map((p) => <option key={p.code} value={p.code}>{p.name}{p.team ? ` · ${p.team}` : ""} · up to {p.maxPlayers} players</option>)}
+            </select>
+          </label>
+        )}
         <label>Access or host code (optional)
           <input id="access" className="code" value={access} onChange={(e) => setAccess(e.target.value.toUpperCase())} placeholder="ABCD-EFGH-JKLM" />
         </label>

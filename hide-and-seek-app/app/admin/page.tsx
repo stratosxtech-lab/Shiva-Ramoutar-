@@ -10,11 +10,13 @@ type Data = {
   codes: { code: string; display: string; plan: keyof typeof PLANS; label: string; uses_left: number | null; expires_at: string; games_hosted: number; created_at: string; team: string | null }[];
   leads: { id: string; kind: string; plan: string | null; name: string; email: string; company: string | null; team_size: number | null; event_date: string | null; message: string | null; created_at: string }[];
   teams: { id: string; name: string; plan: keyof typeof PLANS; members: number; games: number; created_at: string }[];
-  totals: { games: number; players: number; games_week: number; revenue_cents: number };
+  totals: { games: number; players: number; games_week: number; revenue_cents: number; accounts: number };
   stripe: boolean;
+  email: boolean;
+  emails: { id: string; to_email: string; subject: string; status: string; created_at: string }[];
   orders: { session_id: string; plan: keyof typeof PLANS; email: string | null; amount_cents: number | null; display: string; subscription_id: string | null; created_at: string }[];
 };
-const TABS = ["Settings", "Orders", "Access codes", "Sign-ups", "Teams"] as const;
+const TABS = ["Settings", "Orders", "Access codes", "Sign-ups", "Teams", "Emails"] as const;
 const money = (c: number) => (c / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 export default function Admin() {
@@ -23,8 +25,8 @@ export default function Admin() {
   const [data, setData] = useState<Data | null>(null);
   const [tab, setTab] = useState<(typeof TABS)[number]>("Settings");
   const [error, setError] = useState("");
-  const [issued, setIssued] = useState<{ display: string; plan: string } | null>(null);
-  const [form, setForm] = useState({ plan: "group10", label: "", days: "" });
+  const [issued, setIssued] = useState<{ display: string; plan: string; emailed: boolean } | null>(null);
+  const [form, setForm] = useState({ plan: "group10", label: "", days: "", email: "" });
 
   const load = useCallback(async (k: string) => {
     setError("");
@@ -52,8 +54,8 @@ export default function Admin() {
   async function issue(e: React.FormEvent) {
     e.preventDefault(); setError(""); setIssued(null);
     try {
-      const r = await api<{ display: string; plan: string }>("/api/admin/codes", { body: { ...form, days: form.days || undefined }, headers: { "x-admin-key": key } });
-      setIssued(r); setForm({ ...form, label: "" }); load(key);
+      const r = await api<{ display: string; plan: string; emailed: boolean }>("/api/admin/codes", { body: { ...form, days: form.days || undefined }, headers: { "x-admin-key": key } });
+      setIssued(r); setForm({ ...form, label: "", email: "" }); load(key);
     } catch (err) { setError((err as Error).message); }
   }
 
@@ -89,6 +91,7 @@ export default function Admin() {
         <div className="stat"><b>{data.totals.games}</b><small>Games hosted</small></div>
         <div className="stat"><b>{data.totals.games_week}</b><small>Games this week</small></div>
         <div className="stat"><b>{data.totals.players}</b><small>Players</small></div>
+        <div className="stat"><b>{data.totals.accounts}</b><small>Player accounts</small></div>
         <div className="stat"><b>{data.teams.length}</b><small>Teams</small></div>
         <div className="stat"><b>{signups}</b><small>Early-access sign-ups</small></div>
         <div className="stat"><b>{enquiries}</b><small>Corporate enquiries</small></div>
@@ -158,6 +161,7 @@ export default function Admin() {
                   {PLAN_IDS.filter((p) => p !== "free").map((p) => <option key={p} value={p}>{PLANS[p].name} ({PLANS[p].price} {PLANS[p].cadence})</option>)}
                 </select>
               </label>
+              <label>Customer email (optional)<input id="code-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="We'll email them the code" /></label>
               <label>Customer or note<input id="code-label" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} placeholder="e.g. Acme Corp, invoice 1042" /></label>
               <label>Valid for (days)<input id="code-days" inputMode="numeric" value={form.days} onChange={(e) => setForm({ ...form, days: e.target.value.replace(/\D/g, "") })} placeholder={String(PLANS[form.plan as keyof typeof PLANS].validDays)} /></label>
               <button className="btn">Issue code</button>
@@ -165,6 +169,7 @@ export default function Admin() {
             {issued && (
               <div className="notice">
                 New {PLANS[issued.plan as keyof typeof PLANS].name} code: <span className="mono" style={{ fontWeight: 700 }}>{issued.display}</span>.{" "}
+                {issued.emailed ? "We've emailed it to the customer. " : ""}
                 {PLANS[issued.plan as keyof typeof PLANS].audience === "individual"
                   ? "Send it to the customer. They enter it when hosting a game."
                   : "Send it to the buyer. They set up their team at /team/new and become its super user."}
@@ -203,6 +208,30 @@ export default function Admin() {
             ))}
           </tbody>
         </table></div>
+      )}
+
+      {tab === "Emails" && (
+        <>
+          {!data.email && (
+            <div className="notice">
+              Emails aren&apos;t being sent yet. Create a free Resend account, verify your domain, then add RESEND_API_KEY and
+              EMAIL_FROM (for example &quot;Hide &amp; Seek &lt;hello@yourdomain.com&gt;&quot;) to the hide-and-seek project in Vercel and redeploy.
+              Until then, codes still appear on screen.
+            </div>
+          )}
+          <div className="tbl"><table>
+            <thead><tr><th>Date</th><th>To</th><th>Subject</th><th>Status</th></tr></thead>
+            <tbody>
+              {data.emails.length === 0 && <tr><td colSpan={4} className="muted">No emails yet. Purchases, new codes, team set-ups and password resets send them.</td></tr>}
+              {data.emails.map((m) => (
+                <tr key={m.id}>
+                  <td>{fmtDate(m.created_at)}</td><td className="small">{m.to_email}</td><td>{m.subject}</td>
+                  <td><span className={`badge ${m.status === "sent" ? "ok" : m.status === "not configured" ? "" : "warn"}`}>{m.status}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table></div>
+        </>
       )}
 
       {tab === "Teams" && (

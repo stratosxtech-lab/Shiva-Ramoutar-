@@ -1,0 +1,11 @@
+{
+  "appId": "com.stratosxtech.hideandseek",
+  "appName": "Hide & Seek",
+  "webDir": "www",
+  "server": {
+    "url": "https://hide-and-seek-gilt.vercel.app",
+    "cleartext": false
+  },
+  "ios": { "contentInset": "always", "backgroundColor": "#121C26" },
+  "android": { "backgroundColor": "#121C26" }
+}

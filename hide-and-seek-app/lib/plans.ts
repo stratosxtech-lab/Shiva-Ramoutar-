@@ -19,7 +19,7 @@ export type Plan = {
   features: string[];
 };
 
-const ALL: Mode[] = ["classic", "infection"];
+const ALL: Mode[] = ["classic", "infection", "shadow", "duel", "indoor"];
 
 export const PLANS: Record<PlanId, Plan> = {
   free: {

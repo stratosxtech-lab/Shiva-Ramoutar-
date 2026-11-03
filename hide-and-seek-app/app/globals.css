@@ -117,3 +117,10 @@ input.code{font:700 17px var(--mono);letter-spacing:.08em;text-transform:upperca
 .badge.ok{background:rgba(95,191,142,.16);color:var(--moss)}
 .badge.warn{background:rgba(255,123,92,.16);color:var(--ember)}
 .secret{font:700 15px var(--mono);background:var(--dusk);border:1px dashed var(--lantern);border-radius:12px;padding:12px;word-break:break-all;color:var(--lantern)}
+.report{display:flex;flex-direction:column;gap:14px}
+@media print{
+  :root{--dusk:#fff;--dusk-2:#F4F6F7;--dusk-3:#D9E0E4;--mist:#121C26;--fog:#4B5A63;--lantern:#9A6A00;color-scheme:light}
+  .no-print,.nav{display:none!important}
+  .app{max-width:none!important;padding:0!important}
+  .stat,.card,.tbl{break-inside:avoid}
+}
